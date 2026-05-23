@@ -72,28 +72,11 @@ export async function openMetaEditor(path) {
   const commentField = createTextarea('Comment', 'comment', tags.COMM || tags.comment || '', 3);
   const lyricsField = createTextarea('Lyrics', 'lyrics', tags.USLT || tags.lyrics || '', 6);
 
-  // cover preview
-  const coverWrap = document.createElement('div');
-  coverWrap.style.display = 'flex';
-  coverWrap.style.gap = '12px';
-  coverWrap.style.alignItems = 'center';
-  const coverImg = document.createElement('img');
-  coverImg.style.width = '96px';
-  coverImg.style.height = '96px';
-  coverImg.style.objectFit = 'cover';
-  coverImg.style.borderRadius = '8px';
-  coverImg.style.display = 'none';
-  const coverLabel = document.createElement('div');
-  coverLabel.style.color = 'var(--muted)';
-  coverLabel.style.fontSize = '0.85rem';
-  coverLabel.textContent = 'Cover art';
-  coverWrap.appendChild(coverImg);
-  coverWrap.appendChild(coverLabel);
-
   // quick buttons
   const quickWrap = document.createElement('div');
   quickWrap.style.display = 'flex';
   quickWrap.style.gap = '8px';
+  quickWrap.style.marginBottom = '12px';
   const btnFilename = document.createElement('button');
   btnFilename.type = 'button';
   btnFilename.className = 'secondary-btn';
@@ -114,21 +97,68 @@ export async function openMetaEditor(path) {
   quickWrap.appendChild(btnFilename);
   quickWrap.appendChild(btnInferArtist);
 
-  form.appendChild(quickWrap);
-  form.appendChild(coverWrap);
-  // upload control
-  const uploadWrap = document.createElement('div');
-  uploadWrap.style.display = 'flex';
-  uploadWrap.style.alignItems = 'center';
-  uploadWrap.style.gap = '8px';
+  // cover preview
+  const coverWrap = document.createElement('div');
+  coverWrap.style.display = 'flex';
+  coverWrap.style.gap = '16px';
+  coverWrap.style.alignItems = 'flex-start';
+  coverWrap.style.background = 'rgba(255,255,255,0.02)';
+  coverWrap.style.padding = '16px';
+  coverWrap.style.borderRadius = '8px';
+  coverWrap.style.border = '1px solid rgba(255,255,255,0.05)';
+  coverWrap.style.marginBottom = '8px';
+
+  const coverImg = document.createElement('img');
+  coverImg.style.width = '120px';
+  coverImg.style.height = '120px';
+  coverImg.style.objectFit = 'cover';
+  coverImg.style.borderRadius = '6px';
+  coverImg.style.display = 'none';
+  coverImg.style.boxShadow = '0 4px 12px rgba(0,0,0,0.5)';
+
+  const coverRight = document.createElement('div');
+  coverRight.style.display = 'flex';
+  coverRight.style.flexDirection = 'column';
+  coverRight.style.gap = '12px';
+  coverRight.style.flex = '1';
+
+  const coverLabel = document.createElement('div');
+  coverLabel.style.fontWeight = 'bold';
+  coverLabel.style.color = '#fff';
+  coverLabel.textContent = 'Cover Art';
+
+  // Custom file upload UI
+  const uploadControls = document.createElement('div');
+  uploadControls.style.display = 'flex';
+  uploadControls.style.alignItems = 'center';
+  uploadControls.style.gap = '12px';
+
+  const fileLabel = document.createElement('label');
+  fileLabel.className = 'secondary-btn';
+  fileLabel.style.cursor = 'pointer';
+  fileLabel.textContent = 'Browse...';
+
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.accept = 'image/*';
-  fileInput.style.flex = '1';
+  fileInput.style.display = 'none';
+
+  const fileNameDisplay = document.createElement('span');
+  fileNameDisplay.style.fontSize = '0.85rem';
+  fileNameDisplay.style.color = 'var(--muted)';
+  fileNameDisplay.textContent = 'No file selected';
+
+  fileInput.addEventListener('change', () => {
+    fileNameDisplay.textContent = fileInput.files[0] ? fileInput.files[0].name : 'No file selected';
+  });
+
+  fileLabel.appendChild(fileInput);
+
   const uploadBtn = document.createElement('button');
   uploadBtn.type = 'button';
-  uploadBtn.className = 'secondary-btn';
-  uploadBtn.textContent = 'Upload Cover';
+  uploadBtn.className = 'primary-btn';
+  uploadBtn.style.marginLeft = 'auto';
+  uploadBtn.textContent = 'Upload';
   uploadBtn.addEventListener('click', async () => {
     const f = fileInput.files && fileInput.files[0];
     if (!f) return alert('Choose an image first');
@@ -137,7 +167,6 @@ export async function openMetaEditor(path) {
     try {
       const formData = new FormData();
       formData.append('file', f);
-      // path passed as query param - include in URL
       const token = getToken();
       const res = await fetch(`/api/v1/library/cover?path=${encodeURIComponent(path)}`, {
         method: 'POST',
@@ -145,28 +174,50 @@ export async function openMetaEditor(path) {
         body: formData,
       });
       if (!res.ok) throw new Error(await res.text());
-      // refresh cover preview
       coverImg.src = `/thumbnail/${encodeURIComponent(path)}?token=${encodeURIComponent(token)}&t=${Date.now()}`;
       coverImg.style.display = 'block';
+      fileInput.value = '';
+      fileNameDisplay.textContent = 'No file selected';
       alert('Cover uploaded');
     } catch (err) {
       alert('Upload failed: ' + (err.message || err));
     } finally {
       uploadBtn.disabled = false;
-      uploadBtn.textContent = 'Upload Cover';
+      uploadBtn.textContent = 'Upload';
     }
   });
-  uploadWrap.appendChild(fileInput);
-  uploadWrap.appendChild(uploadBtn);
-  form.appendChild(uploadWrap);
-  form.appendChild(titleField.wrap);
-  form.appendChild(artistField.wrap);
-  form.appendChild(albumField.wrap);
-  form.appendChild(trackField.wrap);
-  form.appendChild(genreField.wrap);
-  form.appendChild(yearField.wrap);
-  form.appendChild(commentField.wrap);
-  form.appendChild(lyricsField.wrap);
+
+  uploadControls.appendChild(fileLabel);
+  uploadControls.appendChild(fileNameDisplay);
+  uploadControls.appendChild(uploadBtn);
+
+  coverRight.appendChild(coverLabel);
+  coverRight.appendChild(uploadControls);
+  
+  coverWrap.appendChild(coverImg);
+  coverWrap.appendChild(coverRight);
+
+  // Group text fields
+  const fieldsGrid = document.createElement('div');
+  fieldsGrid.style.display = 'grid';
+  fieldsGrid.style.gridTemplateColumns = '1fr 1fr';
+  fieldsGrid.style.gap = '12px';
+
+  fieldsGrid.appendChild(titleField.wrap);
+  fieldsGrid.appendChild(artistField.wrap);
+  fieldsGrid.appendChild(albumField.wrap);
+  fieldsGrid.appendChild(genreField.wrap);
+  fieldsGrid.appendChild(trackField.wrap);
+  fieldsGrid.appendChild(yearField.wrap);
+
+  commentField.wrap.style.gridColumn = '1 / -1';
+  lyricsField.wrap.style.gridColumn = '1 / -1';
+  fieldsGrid.appendChild(commentField.wrap);
+  fieldsGrid.appendChild(lyricsField.wrap);
+
+  form.appendChild(quickWrap);
+  form.appendChild(coverWrap);
+  form.appendChild(fieldsGrid);
 
   const actions = document.createElement('div');
   actions.style.display = 'flex';
