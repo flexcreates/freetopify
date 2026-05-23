@@ -1,0 +1,134 @@
+Freetopify Personal Use License
+
+Freetopify — Self-hosted, folder-first music server
+
+Copyright (c) 2026 Aditya Singh ("flexcreates")
+Email: devflex13245@gmail.com
+GitHub: https://github.com/flexcreates
+Instagram: https://instagram.com/flexcreates
+
+Project Start Date: May 2026
+Repository: https://github.com/flexcreates/freetopify
+
+1. Preamble & Authorship
+
+This software, "Freetopify" (the "Software"), is an original creative work conceived, designed, and developed by Aditya Singh (operating under the handle flexcreates). The Software was created as a personal project for self-hosting and managing personal music libraries.
+
+Development Methodology:
+While the Software's architecture, user experience flows, and problem-solving approaches are the original intellectual property of Aditya Singh, portions of the source code were generated or refined through the use of artificial intelligence coding assistants. AI tools served solely as implementation assistants—similar to advanced code editors or autocomplete systems—while all creative direction, design decisions, feature specifications, and debugging strategies were created and directed by the author.
+
+AI tools are agents, not authors. The use of AI for code generation does not transfer ownership or diminish the author's intellectual property rights in any way.
+
+2. Grant of Rights
+
+Subject to the conditions in Section 3, permission is hereby granted, free of charge, to any person obtaining a copy of this Software and associated documentation files (the "Software"), to:
+
+2.1 Personal Use Rights
+
+    * Use the Software for personal, non-commercial purposes
+    * Modify the Software for personal use
+    * Distribute copies of the Software to friends and family for personal use
+    * Install and run the Software on personal devices and servers
+    * Study the source code for educational purposes
+
+2.2 Attribution Requirement
+
+Any distribution, public display, or derivative work based on this Software must include:
+
+    * This license file in its entirety
+    * Attribution to "Aditya Singh (flexcreates)" as the original author
+    * A link to the original repository: https://github.com/flexcreates/freetopify
+    * The copyright notice: "Copyright (c) 2026 Aditya Singh"
+
+3. Restrictions & Prohibited Uses
+
+THE FOLLOWING USES ARE STRICTLY PROHIBITED WITHOUT EXPLICIT WRITTEN PERMISSION FROM THE AUTHOR:
+
+3.1 Commercial Use
+
+    * Selling the Software or any derivative work
+    * Using the Software as part of a commercial service or product
+    * Monetizing the Software through advertising, subscriptions, or any other revenue model
+    * Offering the Software as a paid or freemium service to customers
+    * Using the Software in enterprise, business, or organizational contexts without a commercial license
+
+3.2 Misappropriation of Authorship
+
+    * Claiming ownership, authorship, or origination of the Software
+    * Removing or obscuring attribution to Aditya Singh (flexcreates)
+    * Representing derivative works as original creations without acknowledging this foundation
+    * Filing patents or intellectual property claims based on this Software without the author's consent
+
+3.3 Malicious Use
+
+    * Using the Software for illegal activities
+    * Deploying the Software for unauthorized data collection or piracy
+
+4. Donations & Support
+
+While this Software is completely free for personal use and no one is permitted to earn money from its distribution or use, users who enjoy the Software and wish to support its continued development are welcome to donate and buy the creator a coffee!
+
+You can support the project here:
+[INSERT YOUR PAYMENT METHOD / DONATION LINK HERE]
+
+5. Derivative Works & Contributions
+
+5.1 Personal Derivatives
+
+You may create modified versions of the Software for personal use without restriction, provided you retain this license and attribution.
+
+5.2 Public Derivatives
+
+If you publish or distribute modified versions of this Software (forks, remixes, etc.):
+
+    * You must use this same license (Freetopify Personal Use License)
+    * You must clearly state what modifications were made
+    * You must not remove or alter attribution to the original author
+    * You must not add commercial restrictions that are more permissive than this license
+
+5.3 Contributions to Original
+
+By submitting issues, pull requests, or any other contributions to the original repository, you grant Aditya Singh a perpetual, worldwide, non-exclusive, royalty-free license to use, modify, and incorporate your contributions into the Software. You retain copyright to your specific contributions.
+
+6. Disclaimer of Warranty & Liability
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+7. Third-Party Software
+
+This Software incorporates or depends upon various open-source libraries and tools. These dependencies retain their original licenses.
+
+Notable dependencies include:
+
+    * FastAPI & Python ecosystem — Backend framework
+    * SQLite — Database system
+    * yt-dlp & FFmpeg — Media processing and downloading
+    * Various JavaScript and CSS resources
+
+The inclusion of third-party software does not imply endorsement by their respective authors.
+
+8. Commercial Licensing
+
+For commercial use, enterprise deployment, white-label licensing, or any use case not covered by the Personal Use rights above, please contact:
+
+Aditya Singh
+Email: devflex13245@gmail.com
+GitHub: @flexcreates
+
+Commercial licenses are available on a case-by-case basis.
+
+9. Termination
+
+This license automatically terminates if you violate any of its terms. Upon termination, you must cease all use and distribution of the Software and destroy all copies in your possession.
+
+10. Governing Law
+
+This license shall be governed by and construed in accordance with the laws applicable in the jurisdiction of the author, without regard to conflict of law principles.
+
+11. Acceptance
+
+By using, copying, modifying, or distributing this Software, you acknowledge that you have read, understood, and agree to be bound by the terms of this license.
+
+END OF LICENSE
+
+Copyright (c) 2026 Aditya Singh (flexcreates). All rights reserved.
