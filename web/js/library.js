@@ -274,12 +274,40 @@ export async function renderLibrary(mount, path = '', isBack = false) {
     });
   }
 
-  // Attach contextmenu to folders
-  mount.querySelectorAll('[data-folder]').forEach((el) => {
+  function attachContextMenu(el, getItems) {
+    let pressTimer;
+    let didLongPress = false;
+
+    el.addEventListener('touchstart', (e) => {
+      didLongPress = false;
+      pressTimer = window.setTimeout(() => {
+        didLongPress = true;
+        const touch = e.touches[0];
+        showMenu(getItems(), touch.clientX, touch.clientY);
+      }, 800);
+    }, {passive: true});
+
+    el.addEventListener('touchend', () => { clearTimeout(pressTimer); });
+    el.addEventListener('touchmove', () => { clearTimeout(pressTimer); });
+
+    el.addEventListener('click', (e) => {
+      if (didLongPress) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+
     el.addEventListener('contextmenu', (ev) => {
       ev.preventDefault();
+      showMenu(getItems(), ev.clientX, ev.clientY);
+    });
+  }
+
+  // Attach contextmenu to folders
+  mount.querySelectorAll('[data-folder]').forEach((el) => {
+    attachContextMenu(el, () => {
       const folder = el.getAttribute('data-folder');
-      const items = [
+      return [
         { label: 'Cut', onClick: () => setClipboard({ action: 'cut', type: 'folder', path: folder }) },
         { label: 'Copy', onClick: () => setClipboard({ action: 'copy', type: 'folder', path: folder }) },
         { label: 'Paste', onClick: async () => {
@@ -308,18 +336,16 @@ export async function renderLibrary(mount, path = '', isBack = false) {
           }
         }
       ];
-      showMenu(items, ev.clientX, ev.clientY);
     });
   });
 
   // Attach contextmenu to tracks
   mount.querySelectorAll('[data-track-index]').forEach((el) => {
-    el.addEventListener('contextmenu', (ev) => {
-      ev.preventDefault();
+    attachContextMenu(el, () => {
       const idx = Number(el.getAttribute('data-track-index'));
       const track = tracks[idx];
       const path = track.path;
-      const items = [
+      return [
         { label: 'Cut', onClick: () => setClipboard({ action: 'cut', type: 'track', path }) },
         { label: 'Copy', onClick: () => setClipboard({ action: 'copy', type: 'track', path }) },
         { label: 'Paste', onClick: async () => {
@@ -358,7 +384,6 @@ export async function renderLibrary(mount, path = '', isBack = false) {
             }
           }
       ];
-      showMenu(items, ev.clientX, ev.clientY);
     });
   });
 }
