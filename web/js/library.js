@@ -157,10 +157,11 @@ export async function renderLibrary(mount, path = '', isBack = false) {
     <section class="panel">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
         <div class="section-title" style="margin:0;">Library</div>
+        <button id="play-all" class="primary-btn">Play All</button>
       </div>
       ${breadcrumb(path) ? `<div class="crumb">${breadcrumb(path)}</div>` : ''}
 
-      <div class="section-title">Folders</div>
+      <div class="section-title" style="margin-top:16px;">Folders</div>
       <div class="folder-grid">
         ${folders.map((f) => `
           <button class="folder-card" data-folder="${esc(f.path)}">
@@ -175,11 +176,10 @@ export async function renderLibrary(mount, path = '', isBack = false) {
         `).join('') || '<div class="track-ext empty-note">No subfolders</div>'}
       </div>
 
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+      ${tracks.length > 0 ? `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;margin-bottom:12px;">
         <div class="section-title" style="margin:0;">Tracks</div>
-        <button id="play-all" class="primary-btn">Play All</button>
       </div>
-
       <table class="track-table">
         <tbody>
           ${tracks.map((t, i) => `
@@ -194,9 +194,10 @@ export async function renderLibrary(mount, path = '', isBack = false) {
                 </button>
               </td>
             </tr>
-          `).join('') || '<tr><td class="track-ext empty-note">No tracks in this folder</td></tr>'}
+          `).join('')}
         </tbody>
       </table>
+      ` : ''}
     </section>
   `;
 
@@ -244,11 +245,32 @@ export async function renderLibrary(mount, path = '', isBack = false) {
 
   const playAll = mount.querySelector('#play-all');
   if (playAll) {
-    playAll.disabled = tracks.length === 0;
-    playAll.addEventListener('click', () => {
-      if (!tracks.length) return;
-      setQueue(tracks, 0);
-      window.location.hash = '#player';
+    const totalTracks = folders.reduce((sum, f) => sum + (f.track_count || 0), tracks.length);
+    if (totalTracks === 0) playAll.style.display = 'none';
+
+    playAll.addEventListener('click', async () => {
+      if (totalTracks === 0) return;
+      playAll.disabled = true;
+      playAll.textContent = 'Loading...';
+      try {
+        const res = await apiGet(`/api/v1/library/recursive-tracks?path=${encodeURIComponent(path)}`);
+        if (!res.items || res.items.length === 0) {
+          alert("No tracks found in this folder or its subfolders.");
+          return;
+        }
+        const allTracks = res.items.map(t => ({
+          ...t,
+          title: prettyName(t),
+          thumbnail: `/thumbnail/${encodeURIComponent(t.path)}`,
+        }));
+        setQueue(allTracks, 0);
+        window.location.hash = '#player';
+      } catch (err) {
+        alert("Failed to load tracks: " + err.message);
+      } finally {
+        playAll.disabled = false;
+        playAll.textContent = 'Play All';
+      }
     });
   }
 

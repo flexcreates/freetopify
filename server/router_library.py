@@ -80,6 +80,45 @@ async def browse(
     return BrowseResponse(path=path, items=items)
 
 
+@router.get("/recursive-tracks")
+async def recursive_tracks(
+    request: Request,
+    path: str = Query(default=""),
+    _user: str = Depends(get_current_user),
+) -> dict:
+    settings = request.app.state.settings
+    target = safe_path(settings.music_library_path, path)
+    if not target.exists() or not target.is_dir():
+        raise HTTPException(status_code=404, detail="Folder not found")
+
+    items: list[dict] = []
+    # Limit recursive search to avoid massive payloads if library is huge
+    max_tracks = 5000
+    for root, _dirs, files in os.walk(target):
+        root_path = Path(root)
+        for name in sorted(files):
+            p = root_path / name
+            if p.suffix.lower() in AUDIO_EXTS:
+                rel = str(p.relative_to(settings.music_library_path))
+                ext = p.suffix.lower().lstrip(".")
+                items.append({
+                    "id": rel,
+                    "name": name,
+                    "path": rel,
+                    "type": "track",
+                    "title": p.stem,
+                    "duration": None,
+                    "format": ext,
+                    "size_bytes": p.stat().st_size,
+                })
+                if len(items) >= max_tracks:
+                    break
+        if len(items) >= max_tracks:
+            break
+
+    return {"path": path, "items": items}
+
+
 @router.get("/search")
 async def search(request: Request, q: str, _user: str = Depends(get_current_user)) -> dict:
     settings = request.app.state.settings
