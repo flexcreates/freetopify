@@ -6,7 +6,7 @@ export function renderDownloads(mount) {
       <div class="section-title">Downloads</div>
       <form id="dl-form" class="form-grid">
         <input id="dl-url" class="text-input" placeholder="YouTube URL" required />
-        <input id="dl-genre" class="text-input" placeholder="Genre" value="Music" />
+        <input id="dl-genre" class="text-input" placeholder="Category / Folder (e.g. Music, Podcasts)" value="Music" />
         <select id="dl-format" class="select-input"><option value="mp3">MP3</option><option value="flac">FLAC</option></select>
         <button type="submit" class="primary-btn">Start Download</button>
       </form>

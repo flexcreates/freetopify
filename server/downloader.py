@@ -18,13 +18,14 @@ class Downloader:
         self.processes: dict[str, asyncio.subprocess.Process] = {}
 
     def _job_folder(self, job_type: str, genre: str) -> Path:
+        category = self.library_root / genre
         if job_type == "podcast":
-            return self.library_root / "Podcasts"
+            return category / "Podcasts"
         if job_type == "single":
-            return self.library_root / "Singles"
+            return category / "Singles"
         if job_type == "mix":
-            return self.library_root / "Mixes"
-        return self.library_root / "Playlists"
+            return category / "Mixes"
+        return category / "Playlists"
 
     @staticmethod
     def _sanitize_component(value: str) -> str:
