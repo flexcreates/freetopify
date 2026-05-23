@@ -3,11 +3,13 @@ import { apiPost, clearToken, setToken } from '/web/js/api.js';
 export async function login(username, password) {
   const result = await apiPost('/auth/login', { username, password });
   setToken(result.access_token);
+  document.cookie = `freetopify_token=${encodeURIComponent(result.access_token)}; Path=/; SameSite=Lax; Max-Age=${Math.max(0, Number(result.expires_in) || 0)}`;
   return result;
 }
 
 export function logout() {
   clearToken();
+  document.cookie = 'freetopify_token=; Path=/; SameSite=Lax; Max-Age=0';
   window.location.href = '/web/login.html';
 }
 

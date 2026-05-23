@@ -89,6 +89,8 @@ def get_current_user_from_request(request: Request, token_query: str | None = No
         if auth_header.lower().startswith("bearer "):
             token = auth_header[7:].strip()
     if not token:
+        token = request.cookies.get("freetopify_token")
+    if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing token")
 
     payload = decode_access_token(request.app.state.settings.secret_key, token)

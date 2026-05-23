@@ -9,6 +9,15 @@ const app = document.getElementById('app');
 const queueList = document.getElementById('queue-list');
 const globalBackBtn = document.getElementById('btn-global-back');
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
 function updateGlobalBackButton() {
   if (!globalBackBtn) return;
   globalBackBtn.disabled = !hasHistory();
@@ -63,8 +72,7 @@ function updateNowBar() {
   document.getElementById('btn-repeat').classList.toggle('ctl-active', state.repeat);
 
   if (track?.path) {
-    const token = localStorage.getItem('freetopify_token') || '';
-    const artUrl = `/thumbnail/${encodeURIComponent(track.path)}?token=${encodeURIComponent(token)}`;
+    const artUrl = `/thumbnail/${encodeURIComponent(track.path)}`;
     thumbImg.src = artUrl;
     thumbImg.style.display = 'block';
     thumbFallback.style.display = 'none';
@@ -103,7 +111,7 @@ function updateNowBar() {
   } else {
     queueList.innerHTML = state.queue.map((t, i) => `
       <div class="queue-item" data-idx="${i}" style="padding:7px 4px; border-bottom:1px solid rgba(98,168,255,.1); color:${i === state.queueIndex ? '#e6f2ff' : '#9db8d2'}; cursor:pointer; transition: background 0.2s; border-radius:4px;" onmouseover="this.style.background='rgba(126,188,255,0.06)'" onmouseout="this.style.background='transparent'">
-        ${i + 1}. ${t.title || t.name || 'Track'}
+        ${i + 1}. ${escapeHtml(t.title || t.name || 'Track')}
       </div>
     `).join('');
   }
@@ -176,8 +184,8 @@ function renderPlayerView() {
         </div>
         <div class="player-meta">
           <div class="section-title">Now Playing</div>
-          <div id="hero-title" class="hero-title">${s.track?.title || 'Nothing playing'}</div>
-          <div id="hero-path" class="hero-path">${s.track?.path || ''}</div>
+          <div id="hero-title" class="hero-title">${escapeHtml(s.track?.title || 'Nothing playing')}</div>
+          <div id="hero-path" class="hero-path">${escapeHtml(s.track?.path || '')}</div>
         </div>
       </div>
     </section>

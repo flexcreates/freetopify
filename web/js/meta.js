@@ -174,7 +174,7 @@ export async function openMetaEditor(path) {
         body: formData,
       });
       if (!res.ok) throw new Error(await res.text());
-      coverImg.src = `/thumbnail/${encodeURIComponent(path)}?token=${encodeURIComponent(token)}&t=${Date.now()}`;
+      coverImg.src = `/thumbnail/${encodeURIComponent(path)}?t=${Date.now()}`;
       coverImg.style.display = 'block';
       fileInput.value = '';
       fileNameDisplay.textContent = 'No file selected';
@@ -305,8 +305,7 @@ export async function openMetaEditor(path) {
   // load cover art via thumbnail endpoint (if available)
   (async () => {
     try {
-      const token = localStorage.getItem('freetopify_token') || '';
-      const url = `/thumbnail/${encodeURIComponent(path)}?token=${encodeURIComponent(token)}`;
+      const url = `/thumbnail/${encodeURIComponent(path)}`;
       const img = new Image();
       img.onload = () => {
         coverImg.src = url;

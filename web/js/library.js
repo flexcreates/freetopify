@@ -151,7 +151,6 @@ export async function renderLibrary(mount, path = '', isBack = false) {
     title: prettyName(t),
     thumbnail: `/thumbnail/${encodeURIComponent(t.path)}`,
   }));
-  const token = localStorage.getItem('freetopify_token') || '';
 
   mount.innerHTML = `
     <section class="panel">
@@ -166,7 +165,7 @@ export async function renderLibrary(mount, path = '', isBack = false) {
         ${folders.map((f) => `
           <button class="folder-card" data-folder="${esc(f.path)}">
             <div class="folder-card-cover-wrap">
-              <img class="folder-card-cover" src="/api/v1/library/cover?path=${encodeURIComponent(f.path)}&t=${Date.now()}${token ? '&token='+encodeURIComponent(token) : ''}" alt="" />
+              <img class="folder-card-cover" src="/api/v1/library/cover?path=${encodeURIComponent(f.path)}&t=${Date.now()}" alt="" />
             </div>
             <div class="folder-card-body">
               <strong>${esc(f.name)}</strong>
@@ -224,8 +223,7 @@ export async function renderLibrary(mount, path = '', isBack = false) {
     const img = mount.querySelector(`[data-thumb="${i}"]`);
     const fallback = mount.querySelector(`[data-fallback="${i}"]`);
     if (!img || !fallback) return;
-    const token = localStorage.getItem('freetopify_token') || '';
-    img.src = `${t.thumbnail}?token=${encodeURIComponent(token)}`;
+    img.src = t.thumbnail;
     img.addEventListener('error', () => {
       img.style.display = 'none';
       fallback.style.display = 'grid';

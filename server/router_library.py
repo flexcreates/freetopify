@@ -228,6 +228,7 @@ async def rename_item(request: Request, body: dict, _user: str = Depends(get_cur
     src = safe_path(settings.music_library_path, path)
     if not src.exists():
         raise HTTPException(status_code=404, detail='Not found')
+    new_name = Path(new_name).name
     dst = src.parent.joinpath(new_name).resolve()
     if not str(dst).startswith(str(settings.music_library_path.resolve())):
         raise HTTPException(status_code=403, detail='Access denied')

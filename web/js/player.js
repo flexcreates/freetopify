@@ -4,7 +4,6 @@ let queueIndex = -1;
 let shuffleMode = false;
 let repeatMode = false;
 let listeners = [];
-const tokenKey = 'freetopify_token';
 const volumeKey = 'freetopify_volume';
 
 function notify() {
@@ -81,11 +80,10 @@ export function playCurrent() {
   const a = ensurePlayer();
   const item = currentTrack();
   if (!item) return;
-  const token = localStorage.getItem(tokenKey) || '';
   // Fix: encodeURIComponent for the path part to handle special characters correctly
   const encodedPath = item.path.split('/').map(encodeURIComponent).join('/');
   const streamPath = `/stream/${encodedPath}`;
-  const newSrc = token ? `${streamPath}?token=${encodeURIComponent(token)}` : streamPath;
+  const newSrc = streamPath;
 
   console.log(`[PLAYER] playCurrent() called. item.path: ${item.path}`);
   if (a.getAttribute('data-playing-path') === item.path) {

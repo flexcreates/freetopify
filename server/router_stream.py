@@ -26,7 +26,9 @@ MIME_TYPES = {
 def safe_path(library_root: Path, requested_path: str) -> Path:
     root = library_root.resolve()
     resolved = root.joinpath(requested_path).resolve()
-    if not str(resolved).startswith(str(root)):
+    try:
+        resolved.relative_to(root)
+    except ValueError:
         raise HTTPException(status_code=403, detail="Access denied")
     return resolved
 
@@ -140,7 +142,11 @@ async def thumbnail(
             cur = await db.execute("SELECT absolute_path FROM tracks WHERE id = ? OR relative_path = ?", (track_ref, track_ref))
             row = await cur.fetchone()
         if row:
-            p = Path(row[0])
+            p = Path(row[0]).resolve()
+            try:
+                p.relative_to(settings.music_library_path.resolve())
+            except ValueError:
+                raise HTTPException(status_code=403, detail="Access denied")
             if p.exists() and p.is_file():
                 candidate = p
 

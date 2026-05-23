@@ -1,4 +1,13 @@
-import { apiGet, apiPost, getToken } from '/web/js/api.js';
+import { apiGet, apiPost } from '/web/js/api.js';
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
 
 export function renderDownloads(mount) {
   mount.innerHTML = `
@@ -25,10 +34,10 @@ export function renderDownloads(mount) {
     try {
       const jobs = await apiGet('/api/v1/download/jobs');
       jobsEl.innerHTML = jobs.items.slice(0, 20)
-        .map((j) => `<li><strong>${j.status}</strong> - ${j.url}</li>`)
+        .map((j) => `<li><strong>${escapeHtml(j.status)}</strong> - ${escapeHtml(j.url)}</li>`)
         .join('') || '<li>No jobs</li>';
     } catch (err) {
-      jobsEl.innerHTML = `<li>${err.message}</li>`;
+      jobsEl.innerHTML = `<li>${escapeHtml(err.message)}</li>`;
     }
   }
 
@@ -45,8 +54,7 @@ export function renderDownloads(mount) {
 
     try {
       const res = await apiPost('/api/v1/download/start', body);
-      const token = getToken();
-      const es = new EventSource(`/api/v1/download/progress/${res.job_id}?token=${encodeURIComponent(token)}`);
+      const es = new EventSource(`/api/v1/download/progress/${res.job_id}`);
       es.onmessage = (evt) => {
         logEl.textContent += `${evt.data}\n`;
         logEl.scrollTop = logEl.scrollHeight;
