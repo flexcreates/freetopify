@@ -50,7 +50,9 @@ function updateNowBar() {
 
   titleEl.textContent = track?.title || 'Nothing playing';
   subEl.textContent = track?.path || 'Pick a song from Library';
-  btn.textContent = state.paused ? '▶' : '⏸';
+  const playIcon = `<svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M8 5v14l11-7z"/></svg>`;
+  const pauseIcon = `<svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+  btn.innerHTML = state.paused ? playIcon : pauseIcon;
 
   nowTime.textContent = fmtDuration(state.currentTime);
   nowDur.textContent = fmtDuration(state.duration);
@@ -110,6 +112,16 @@ function bindNowBar() {
   document.getElementById('btn-next').addEventListener('click', () => next());
   document.getElementById('seek').addEventListener('input', (e) => seekToPercent(Number(e.target.value)));
   document.getElementById('volume').addEventListener('input', (e) => setVolume(Number(e.target.value) / 100));
+
+  const nowBar = document.getElementById('now-bar');
+  nowBar.style.cursor = 'pointer';
+  nowBar.addEventListener('click', (e) => {
+    // don't navigate if clicking buttons, sliders, etc.
+    if (e.target.closest('button') || e.target.closest('input')) return;
+    if (window.location.hash !== '#player') {
+      window.location.hash = '#player';
+    }
+  });
 }
 
 function setActiveLink(route) {
@@ -121,7 +133,10 @@ function setActiveLink(route) {
 function renderPlayerView() {
   const s = getPlayerState();
   app.innerHTML = `
-    <section class="panel player-hero">
+    <section class="panel player-hero" style="position: relative;">
+      <button id="btn-minimize" style="position: absolute; top: 16px; left: 16px; z-index: 10; background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; backdrop-filter: blur(4px); transition: background 0.2s;">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+      </button>
       <div class="player-ambient"></div>
       <div class="player-stage">
         <div class="vinyl-wrap">
@@ -141,6 +156,12 @@ function renderPlayerView() {
     </section>
   `;
   updateNowBar();
+  const btnMin = document.getElementById('btn-minimize');
+  if (btnMin) {
+    btnMin.addEventListener('click', () => {
+      history.back();
+    });
+  }
 }
 
 function renderSettings() {
