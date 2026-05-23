@@ -40,6 +40,7 @@ Web UI fully implemented and polished. Next phase is developing the Flutter Andr
 - Reorganized filesystem to enforce pure flat structures for Singles and root-level Playlists
 - Fixed historical routing logic for web library browser
 - Generated and pushed `LICENSE` file for the project
+- Added advanced playback controls (Repeat-One loop, Permanent Playlist Loop, and true runtime Randomized Shuffle)
 
 ## Known Issues
 - Dependency install requires sudo password in this environment (non-interactive run cannot provide password)
