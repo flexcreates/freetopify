@@ -8,6 +8,7 @@ import bcrypt
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.responses import JSONResponse, Response
 
 from server.models import LoginRequest, LoginResponse
 
@@ -101,7 +102,7 @@ def get_current_user_from_request(request: Request, token_query: str | None = No
 
 
 @router.post("/login", response_model=LoginResponse)
-async def login(body: LoginRequest, request: Request) -> LoginResponse:
+async def login(body: LoginRequest, request: Request) -> Response:
     client = request.client.host if request.client else "unknown"
     _check_login_rate_limit(client)
 
@@ -117,7 +118,16 @@ async def login(body: LoginRequest, request: Request) -> LoginResponse:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
 
     token, expires_in = create_access_token(settings.secret_key, row[0], settings.token_expire_hours)
-    return LoginResponse(access_token=token, expires_in=expires_in)
+    response = JSONResponse(LoginResponse(access_token=token, expires_in=expires_in).model_dump())
+    response.set_cookie(
+        key="freetopify_token",
+        value=token,
+        max_age=expires_in,
+        path="/",
+        samesite="lax",
+        httponly=True,
+    )
+    return response
 
 
 @router.get("/me")
@@ -127,4 +137,6 @@ async def me(current_user: str = Depends(get_current_user)) -> dict[str, str]:
 
 @router.post("/logout")
 async def logout(current_user: str = Depends(get_current_user)) -> dict[str, str]:
-    return {"status": "ok", "user": current_user}
+    response = JSONResponse({"status": "ok", "user": current_user})
+    response.delete_cookie(key="freetopify_token", path="/")
+    return response
