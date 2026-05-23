@@ -19,13 +19,15 @@ class Downloader:
 
     def _job_folder(self, job_type: str, genre: str) -> Path:
         category = self.library_root / genre
-        if job_type == "podcast":
-            return category / "Podcasts"
-        if job_type == "single":
-            return category / "Singles"
-        if job_type == "mix":
-            return category / "Mixes"
-        return category / "Playlists"
+        if genre.lower() == "music":
+            if job_type == "podcast":
+                return category / "Podcasts"
+            if job_type == "single":
+                return category / "Singles"
+            if job_type == "mix":
+                return category / "Mixes"
+            return category / "Playlists"
+        return category
 
     @staticmethod
     def _sanitize_component(value: str) -> str:
