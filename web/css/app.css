@@ -661,4 +661,110 @@ input[type="range"] {
   resize: vertical;
 }
 
+/* =========================================
+   RESPONSIVE DESIGN BREAKPOINTS
+========================================= */
+
+/* Tablet / Small Desktop */
+@media (max-width: 1024px) {
+  .app-shell {
+    grid-template-columns: 200px 1fr;
+    grid-template-rows: 1fr auto;
+  }
+  
+  /* Move right panel (queue) below the main content */
+  .right-panel {
+    grid-column: 1 / -1;
+    min-height: 200px;
+    height: auto;
+  }
+}
+
+/* Mobile Devices */
+@media (max-width: 768px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    height: auto;
+    min-height: calc(100vh - 120px);
+    padding: var(--space-1);
+  }
+
+  .sidebar {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .brand {
+    font-size: 1.5rem;
+    margin-bottom: 0;
+    text-align: center;
+  }
+
+  /* Make sidebar navigation horizontal and scrollable */
+  .side-nav {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 4px;
+    /* hide scrollbar */
+    -ms-overflow-style: none;  
+    scrollbar-width: none;  
+  }
+  .side-nav::-webkit-scrollbar { 
+    display: none; 
+  }
+  .side-link {
+    white-space: nowrap;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  /* Adjust main content view */
+  .view {
+    padding: var(--space-1);
+  }
+
+  .content-top {
+    padding: var(--space-1) var(--space-1) 8px;
+  }
+
+  /* Folder grid should fit 2 items on narrow screens */
+  .folder-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .folder-card-body strong {
+    font-size: 0.9rem;
+  }
+
+  /* Track table adjustments */
+  .track-time, .track-ext {
+    font-size: 0.8rem;
+  }
+
+  /* Now Playing Bar vertical stacking */
+  .now-bar {
+    height: auto;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 16px;
+    padding: 16px;
+    margin: 0 var(--space-1) var(--space-1);
+  }
+
+  .now-meta {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .volume-wrap {
+    justify-content: center;
+  }
+}
+
 
