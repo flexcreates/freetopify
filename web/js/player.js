@@ -124,6 +124,15 @@ export function next() {
     playCurrent();
   } else if (queue.length > 0) {
     // Permanent playlist loop!
+    if (shuffleMode) {
+      console.log(`[PLAYER] End of shuffled queue. Generating fresh random queue for the new loop!`);
+      const newQueue = originalQueue.slice();
+      for (let i = newQueue.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newQueue[i], newQueue[j]] = [newQueue[j], newQueue[i]];
+      }
+      queue = newQueue;
+    }
     queueIndex = 0;
     console.log(`[PLAYER] End of queue reached. Permanent loop ON. Wrapping to queueIndex: 0`);
     playCurrent();
@@ -145,6 +154,14 @@ export function prev() {
     playCurrent();
   } else if (queue.length > 0) {
     // Wrap around to the last song (Permanent Loop)
+    if (shuffleMode) {
+      const newQueue = originalQueue.slice();
+      for (let i = newQueue.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newQueue[i], newQueue[j]] = [newQueue[j], newQueue[i]];
+      }
+      queue = newQueue;
+    }
     queueIndex = queue.length - 1;
     playCurrent();
   }
@@ -182,12 +199,6 @@ export function toggleShuffle() {
     }
     queue = current ? [current, ...rest] : rest;
     queueIndex = 0;
-    
-    // User requested that toggling shuffle immediately picks a random song
-    if (rest.length > 0 && current && !ensurePlayer().paused) {
-      next();
-      return; // next() will call notify()
-    }
   } else {
     queue = originalQueue.slice();
     queueIndex = queue.findIndex((t) => t.path === current?.path);
