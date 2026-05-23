@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+aiosqlite
+python-dotenv
+PyJWT
+bcrypt
+mutagen
+watchdog
+zeroconf
+python-multipart
+yt-dlp
+psutil
+pytest
+httpx

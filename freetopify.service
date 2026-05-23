@@ -1,0 +1,15 @@
+[Unit]
+Description=Freetopify Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/freetopify
+ExecStart=/opt/freetopify/venv/bin/uvicorn server.main:app --host 0.0.0.0 --port 7171
+Restart=on-failure
+RestartSec=5
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target

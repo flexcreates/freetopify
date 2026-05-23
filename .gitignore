@@ -1,0 +1,9 @@
+.env
+venv/
+__pycache__/
+*.pyc
+data/
+logs/
+android/build/
+android/.dart_tool/
+android/.gradle/
