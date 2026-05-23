@@ -21,7 +21,12 @@ function ensurePlayer() {
   audio.volume = Number.isFinite(saved) ? Math.max(0, Math.min(1, saved)) : 0.8;
   audio.addEventListener('ended', () => {
     console.log('[PLAYER] audio "ended" event fired.');
-    next();
+    if (repeatMode) {
+      console.log('[PLAYER] Repeat One is ON. Replaying current track.');
+      playCurrent();
+    } else {
+      next();
+    }
   });
   audio.addEventListener('timeupdate', notify);
   audio.addEventListener('play', notify);
@@ -112,20 +117,16 @@ export function togglePlay() {
 }
 
 export function next() {
-  console.log(`[PLAYER] next() called. queueIndex: ${queueIndex}, queue.length: ${queue.length}, repeatMode: ${repeatMode}`);
+  console.log(`[PLAYER] next() called. queueIndex: ${queueIndex}, queue.length: ${queue.length}`);
   if (queueIndex + 1 < queue.length) {
     queueIndex += 1;
     console.log(`[PLAYER] Moving to next track in queue. New queueIndex: ${queueIndex}`);
     playCurrent();
-  } else if (repeatMode && queue.length > 0) {
+  } else if (queue.length > 0) {
+    // Permanent playlist loop!
     queueIndex = 0;
-    console.log(`[PLAYER] End of queue reached. Repeat mode is ON. Wrapping around to queueIndex: 0`);
+    console.log(`[PLAYER] End of queue reached. Permanent loop ON. Wrapping to queueIndex: 0`);
     playCurrent();
-  } else {
-    console.log(`[PLAYER] End of queue reached. Repeat mode is OFF. Stopping playback.`);
-    const a = ensurePlayer();
-    a.pause();
-    a.currentTime = 0;
   }
   notify();
 }
@@ -142,13 +143,10 @@ export function prev() {
   if (queueIndex > 0) {
     queueIndex -= 1;
     playCurrent();
-  } else if (repeatMode && queue.length > 0) {
-    // Wrap around to the last song
+  } else if (queue.length > 0) {
+    // Wrap around to the last song (Permanent Loop)
     queueIndex = queue.length - 1;
     playCurrent();
-  } else if (queue.length > 0) {
-    // Just rewind
-    a.currentTime = 0;
   }
   notify();
 }
