@@ -24,7 +24,7 @@ class Downloader:
             return self.library_root / "Singles"
         if job_type == "mix":
             return self.library_root / "Mixes"
-        return self.library_root / "Playlists" / genre
+        return self.library_root / "Playlists"
 
     @staticmethod
     def _sanitize_component(value: str) -> str:
@@ -34,7 +34,7 @@ class Downloader:
 
     def _output_template(self, job: DownloadJob, output_dir: Path) -> str:
         if job.type == "single":
-            return str(output_dir / "%(uploader)s" / "%(title)s.%(ext)s")
+            return str(output_dir / "%(title)s.%(ext)s")
         if job.type == "podcast":
             return str(output_dir / "%(uploader)s" / "%(title)s.%(ext)s")
         if job.type == "mix":
