@@ -80,17 +80,17 @@ export function playCurrent() {
   const item = currentTrack();
   if (!item) return;
   const token = localStorage.getItem(tokenKey) || '';
-  const streamPath = `/stream/${encodeURI(item.path)}`;
+  // Fix: encodeURIComponent for the path part to handle special characters correctly
+  const encodedPath = item.path.split('/').map(encodeURIComponent).join('/');
+  const streamPath = `/stream/${encodedPath}`;
   const newSrc = token ? `${streamPath}?token=${encodeURIComponent(token)}` : streamPath;
-  
-  // Browsers resolve a.src to an absolute URL, so we construct one for comparison
-  const absoluteNewSrc = new URL(newSrc, window.location.origin).href;
 
-  if (a.src === absoluteNewSrc) {
-    // If it's the exact same track (e.g. queue loop with 1 song), just reset time
+  if (a.getAttribute('data-playing-path') === item.path) {
+    // Exact same track (e.g. single song loop) - just rewind
     a.currentTime = 0;
     a.play().catch(() => {});
   } else {
+    a.setAttribute('data-playing-path', item.path);
     a.src = newSrc;
     a.load();
     a.play().catch(() => {});
@@ -121,9 +121,24 @@ export function next() {
 }
 
 export function prev() {
+  const a = ensurePlayer();
+  // If more than 3 seconds in, just restart the current song
+  if (a.currentTime > 3) {
+    a.currentTime = 0;
+    notify();
+    return;
+  }
+
   if (queueIndex > 0) {
     queueIndex -= 1;
     playCurrent();
+  } else if (repeatMode && queue.length > 0) {
+    // Wrap around to the last song
+    queueIndex = queue.length - 1;
+    playCurrent();
+  } else if (queue.length > 0) {
+    // Just rewind
+    a.currentTime = 0;
   }
   notify();
 }
