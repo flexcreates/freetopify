@@ -69,6 +69,14 @@ export function setQueue(items, startIndex = 0) {
   notify();
 }
 
+export function jumpToQueueIndex(idx) {
+  if (idx >= 0 && idx < queue.length) {
+    queueIndex = idx;
+    playCurrent();
+    notify();
+  }
+}
+
 export function playCurrent() {
   const a = ensurePlayer();
   const item = currentTrack();

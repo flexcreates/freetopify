@@ -84,6 +84,58 @@ function parentPath(path) {
   return parts.slice(0, -1).join('/');
 }
 
+// Context menu: cut/copy/paste/delete/rename/meta
+  const fmClipboardKey = 'freetopify_fs_clipboard';
+
+  function setClipboard(obj) {
+    sessionStorage.setItem(fmClipboardKey, JSON.stringify(obj));
+  }
+  function getClipboard() {
+    const v = sessionStorage.getItem(fmClipboardKey);
+    return v ? JSON.parse(v) : null;
+  }
+
+  function hideMenu(menu) {
+    if (menu && menu.parentNode) menu.parentNode.removeChild(menu);
+  }
+
+  function showMenu(items, x, y) {
+    hideMenu(document.getElementById('fm-context-menu'));
+    const menu = document.createElement('div');
+    menu.id = 'fm-context-menu';
+    menu.style.position = 'fixed';
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    menu.style.zIndex = 9999;
+    menu.style.background = '#071526';
+    menu.style.border = '1px solid rgba(126,188,255,0.12)';
+    menu.style.padding = '6px';
+    menu.style.borderRadius = '6px';
+    menu.style.boxShadow = '0 8px 24px rgba(2,10,22,0.6)';
+    items.forEach((it) => {
+      const el = document.createElement('div');
+      el.textContent = it.label;
+      el.style.padding = '6px 10px';
+      el.style.cursor = 'pointer';
+      el.style.color = '#dfeefb';
+      el.addEventListener('click', () => {
+        try { it.onClick(); } catch (e) { console.error(e); }
+        hideMenu(menu);
+      });
+      el.addEventListener('mouseenter', () => el.style.background = 'rgba(126,188,255,0.06)');
+      el.addEventListener('mouseleave', () => el.style.background = 'transparent');
+      menu.appendChild(el);
+    });
+    document.body.appendChild(menu);
+    setTimeout(() => {
+      const onDoc = (e) => { if (!menu.contains(e.target)) hideMenu(menu); };
+      document.addEventListener('click', onDoc, { once: true });
+    }, 10);
+  }
+
+  // use `apiPost` from /web/js/api.js to ensure Authorization header
+
+  
 export async function renderLibrary(mount, path = '', isBack = false) {
   // push previous path into history for back navigation
   const prev = currentPath;
@@ -200,57 +252,6 @@ export async function renderLibrary(mount, path = '', isBack = false) {
     });
   }
 
-  // Context menu: cut/copy/paste/delete/rename/meta
-  const fmClipboardKey = 'freetopify_fs_clipboard';
-
-  function setClipboard(obj) {
-    sessionStorage.setItem(fmClipboardKey, JSON.stringify(obj));
-  }
-  function getClipboard() {
-    const v = sessionStorage.getItem(fmClipboardKey);
-    return v ? JSON.parse(v) : null;
-  }
-
-  function hideMenu(menu) {
-    if (menu && menu.parentNode) menu.parentNode.removeChild(menu);
-  }
-
-  function showMenu(items, x, y) {
-    hideMenu(document.getElementById('fm-context-menu'));
-    const menu = document.createElement('div');
-    menu.id = 'fm-context-menu';
-    menu.style.position = 'fixed';
-    menu.style.left = x + 'px';
-    menu.style.top = y + 'px';
-    menu.style.zIndex = 9999;
-    menu.style.background = '#071526';
-    menu.style.border = '1px solid rgba(126,188,255,0.12)';
-    menu.style.padding = '6px';
-    menu.style.borderRadius = '6px';
-    menu.style.boxShadow = '0 8px 24px rgba(2,10,22,0.6)';
-    items.forEach((it) => {
-      const el = document.createElement('div');
-      el.textContent = it.label;
-      el.style.padding = '6px 10px';
-      el.style.cursor = 'pointer';
-      el.style.color = '#dfeefb';
-      el.addEventListener('click', () => {
-        try { it.onClick(); } catch (e) { console.error(e); }
-        hideMenu(menu);
-      });
-      el.addEventListener('mouseenter', () => el.style.background = 'rgba(126,188,255,0.06)');
-      el.addEventListener('mouseleave', () => el.style.background = 'transparent');
-      menu.appendChild(el);
-    });
-    document.body.appendChild(menu);
-    setTimeout(() => {
-      const onDoc = (e) => { if (!menu.contains(e.target)) hideMenu(menu); };
-      document.addEventListener('click', onDoc, { once: true });
-    }, 10);
-  }
-
-  // use `apiPost` from /web/js/api.js to ensure Authorization header
-
   // Attach contextmenu to folders
   mount.querySelectorAll('[data-folder]').forEach((el) => {
     el.addEventListener('contextmenu', (ev) => {
@@ -342,4 +343,49 @@ export async function renderLibrary(mount, path = '', isBack = false) {
 
 export function getCurrentLibraryPath() {
   return currentPath;
+}
+
+export function showTrackContextMenu(ev, track, mount) {
+  ev.preventDefault();
+  const path = track.path;
+  const items = [
+    { label: 'Cut', onClick: () => setClipboard({ action: 'cut', type: 'track', path }) },
+    { label: 'Copy', onClick: () => setClipboard({ action: 'copy', type: 'track', path }) },
+    { label: 'Paste', onClick: async () => {
+        const cb = getClipboard();
+        if (!cb) return alert('Clipboard empty');
+        try {
+          const dst = getCurrentLibraryPath();
+          if (cb.action === 'cut') await apiPost('/api/v1/library/move', { src: cb.path, dst_folder: dst });
+          else await apiPost('/api/v1/library/copy', { src: cb.path, dst_folder: dst });
+          if (mount) await renderLibrary(mount, getCurrentLibraryPath());
+        } catch (err) { alert(err.message || err); }
+      }
+    },
+    { label: 'Rename', onClick: async () => {
+        const name = prompt('New filename:', track.name || track.title || '');
+        if (!name) return;
+        try { await apiPost('/api/v1/library/rename', { path, new_name: name }); if (mount) await renderLibrary(mount, getCurrentLibraryPath()); } catch (err) { alert(err.message || err); }
+      }
+    },
+    { label: 'Delete', onClick: async () => {
+        if (!confirm('Delete this file?')) return;
+        try { await apiPost('/api/v1/library/delete', { path }); if (mount) await renderLibrary(mount, getCurrentLibraryPath()); } catch (err) { alert(err.message || err); }
+      }
+    },
+    { label: 'View Metadata', onClick: async () => {
+        try {
+          const data = await apiGet(`/api/v1/library/meta?path=${encodeURIComponent(path)}`);
+          alert(JSON.stringify(data, null, 2));
+        } catch (err) { alert(err.message || err); }
+      }
+    },
+    { label: 'Edit Metadata', onClick: async () => {
+        try {
+          await openMetaEditor(path);
+        } catch (err) { alert(err.message || err); }
+      }
+    }
+  ];
+  showMenu(items, ev.clientX, ev.clientY);
 }

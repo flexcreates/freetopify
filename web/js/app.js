@@ -1,8 +1,8 @@
 import { apiGet, clearToken, getToken } from '/web/js/api.js';
 import { logout } from '/web/js/auth.js';
 import { renderDownloads } from '/web/js/downloader.js';
-import { getCurrentLibraryPath, renderLibrary, goBackOne, hasHistory } from '/web/js/library.js';
-import { bindKeyboardShortcuts, getPlayerState, next, onPlayerStateChange, prev, seekToPercent, setVolume, togglePlay, toggleRepeat, toggleShuffle } from '/web/js/player.js';
+import { getCurrentLibraryPath, renderLibrary, goBackOne, hasHistory, showTrackContextMenu } from '/web/js/library.js';
+import { bindKeyboardShortcuts, getPlayerState, next, onPlayerStateChange, prev, seekToPercent, setVolume, togglePlay, toggleRepeat, toggleShuffle, jumpToQueueIndex } from '/web/js/player.js';
 import { connectLiveUpdates } from '/web/js/websocket.js';
 
 const app = document.getElementById('app');
@@ -102,7 +102,7 @@ function updateNowBar() {
     queueList.textContent = 'No tracks queued';
   } else {
     queueList.innerHTML = state.queue.map((t, i) => `
-      <div style="padding:7px 0; border-bottom:1px solid rgba(98,168,255,.1); color:${i === state.queueIndex ? '#e6f2ff' : '#9db8d2'};">
+      <div class="queue-item" data-idx="${i}" style="padding:7px 4px; border-bottom:1px solid rgba(98,168,255,.1); color:${i === state.queueIndex ? '#e6f2ff' : '#9db8d2'}; cursor:pointer; transition: background 0.2s; border-radius:4px;" onmouseover="this.style.background='rgba(126,188,255,0.06)'" onmouseout="this.style.background='transparent'">
         ${i + 1}. ${t.title || t.name || 'Track'}
       </div>
     `).join('');
@@ -127,6 +127,28 @@ function bindNowBar() {
       window.location.hash = '#player';
     }
   });
+
+  if (queueList) {
+    queueList.addEventListener('click', (e) => {
+      const item = e.target.closest('.queue-item');
+      if (item) {
+        const idx = Number(item.getAttribute('data-idx'));
+        jumpToQueueIndex(idx);
+      }
+    });
+
+    queueList.addEventListener('contextmenu', (e) => {
+      const item = e.target.closest('.queue-item');
+      if (item) {
+        const idx = Number(item.getAttribute('data-idx'));
+        const state = getPlayerState();
+        const track = state.queue[idx];
+        if (track) {
+          showTrackContextMenu(e, track, document.getElementById('app-view'));
+        }
+      }
+    });
+  }
 }
 
 function setActiveLink(route) {
