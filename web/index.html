@@ -9,16 +9,59 @@
   <link rel="stylesheet" href="/web/css/app.css" />
 </head>
 <body>
-  <header class="topbar">
-    <h1>Freetopify</h1>
-    <nav>
-      <a href="#library">Library</a>
-      <a href="#player">Player</a>
-      <a href="#downloads">Downloads</a>
-      <a href="#settings">Settings</a>
-    </nav>
-  </header>
-  <main id="app">Loading...</main>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">Freetopify</div>
+      <nav class="side-nav">
+        <a href="#library" class="side-link">Library</a>
+        <a href="#player" class="side-link">Now Playing</a>
+        <a href="#downloads" class="side-link">Downloads</a>
+        <a href="#settings" class="side-link">Settings</a>
+      </nav>
+    </aside>
+
+    <section class="content-wrap">
+      <header class="content-top">
+        <div class="content-title">Your Music</div>
+      </header>
+      <main id="app" class="view">Loading...</main>
+    </section>
+
+    <aside class="right-panel" id="right-panel">
+      <div class="right-title">Queue</div>
+      <div id="queue-list" class="queue-list">No tracks queued</div>
+    </aside>
+  </div>
+
+  <footer class="now-bar" id="now-bar">
+    <div class="now-meta">
+      <img class="thumb-img" id="now-thumb-img" alt="" />
+      <div class="thumb-fallback" id="now-thumb-fallback">♪</div>
+      <div class="now-text">
+        <div class="now-title" id="now-title">Nothing playing</div>
+        <div class="now-sub" id="now-sub">Pick a song from Library</div>
+      </div>
+    </div>
+
+    <div class="now-controls">
+      <div class="control-buttons">
+        <button id="btn-prev" class="ctl">⏮</button>
+        <button id="btn-play" class="ctl ctl-main">▶</button>
+        <button id="btn-next" class="ctl">⏭</button>
+      </div>
+      <div class="progress-wrap">
+        <span id="now-time">0:00</span>
+        <input id="seek" type="range" min="0" max="100" value="0" />
+        <span id="now-dur">0:00</span>
+      </div>
+    </div>
+
+    <div class="volume-wrap">
+      <span>🔊</span>
+      <input id="volume" type="range" min="0" max="100" value="80" />
+    </div>
+  </footer>
+
   <script type="module" src="/web/js/app.js"></script>
 </body>
 </html>

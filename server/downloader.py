@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -20,17 +21,31 @@ class Downloader:
         if job_type == "podcast":
             return self.library_root / "Podcasts"
         if job_type == "single":
-            return self.library_root / "Singles" / genre
+            return self.library_root / "Singles"
         if job_type == "mix":
             return self.library_root / "Mixes"
         return self.library_root / "Playlists" / genre
+
+    @staticmethod
+    def _sanitize_component(value: str) -> str:
+        cleaned = re.sub(r'[\\/:*?"<>|]', "-", value).strip()
+        cleaned = re.sub(r"\s+", " ", cleaned)
+        return cleaned or "Unknown"
+
+    def _output_template(self, job: DownloadJob, output_dir: Path) -> str:
+        if job.type == "single":
+            return str(output_dir / "%(uploader)s" / "%(title)s.%(ext)s")
+        if job.type == "podcast":
+            return str(output_dir / "%(uploader)s" / "%(title)s.%(ext)s")
+        if job.type == "mix":
+            return str(output_dir / "%(playlist_title,s_title)s" / "%(title)s.%(ext)s")
+        return str(output_dir / "%(playlist_title,s_title)s" / "%(title)s.%(ext)s")
 
     async def _run(self, job: DownloadJob, bitrate: str) -> None:
         output_dir = Path(job.output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        ext = "%(ext)s" if job.format == "flac" else "mp3"
-        output_tpl = str(output_dir / f"%(title)s.%(id)s.{ext}")
+        output_tpl = self._output_template(job, output_dir)
 
         cmd = [
             self.ytdlp_path,
@@ -40,55 +55,64 @@ class Downloader:
             "--audio-quality",
             bitrate,
             "--embed-metadata",
+            "--embed-thumbnail",
             "--newline",
             "-o",
             output_tpl,
             job.url,
         ]
 
-        job.status = "running"
-        job.started_at = datetime.now(UTC)
-        process = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT,
-        )
-        self.processes[job.job_id] = process
+        try:
+            job.status = "running"
+            job.started_at = datetime.now(UTC)
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+            )
+            self.processes[job.job_id] = process
 
-        assert process.stdout is not None
-        while True:
-            line = await process.stdout.readline()
-            if not line:
-                break
-            text = line.decode("utf-8", errors="replace").rstrip()
-            job.log_lines.append(text)
-            if "[download]" in text and "%" in text:
-                job.tracks_downloaded += 0
+            assert process.stdout is not None
+            while True:
+                line = await process.stdout.readline()
+                if not line:
+                    break
+                text = line.decode("utf-8", errors="replace").rstrip()
+                job.log_lines.append(text)
+                if "Destination:" in text:
+                    job.tracks_downloaded += 1
 
-        code = await process.wait()
-        self.processes.pop(job.job_id, None)
+            code = await process.wait()
+            self.processes.pop(job.job_id, None)
 
-        if code == 0:
-            job.status = "done"
-        else:
+            if code == 0:
+                job.status = "done"
+            else:
+                job.status = "failed"
+                job.error = f"yt-dlp exited with {code}"
+                job.tracks_failed += 1
+        except Exception as exc:
+            self.processes.pop(job.job_id, None)
             job.status = "failed"
-            job.error = f"yt-dlp exited with {code}"
+            job.error = str(exc)
             job.tracks_failed += 1
-
-        job.finished_at = datetime.now(UTC)
+            job.log_lines.append(f"ERROR: {exc}")
+        finally:
+            job.finished_at = datetime.now(UTC)
 
     async def _start_job(self, url: str, job_type: str, genre: str, fmt: str, bitrate: str, output_dir: Path) -> str:
         active = sum(1 for j in self.jobs.values() if j.status in {"queued", "running"})
         if active >= self.max_jobs:
             raise RuntimeError("Too many concurrent jobs")
 
+        clean_genre = self._sanitize_component(genre or "Music")
         job_id = str(uuid.uuid4())
         job = DownloadJob(
             job_id=job_id,
             url=url,
             type=job_type,
             status="queued",
-            genre=genre,
+            genre=clean_genre,
             format=fmt,
             output_dir=str(output_dir),
         )
@@ -97,12 +121,14 @@ class Downloader:
         return job_id
 
     async def download_single(self, url: str, genre: str, fmt: str, bitrate: str, output_dir: str | None = None) -> str:
-        target = Path(output_dir) if output_dir else self._job_folder("single", genre)
-        return await self._start_job(url, "single", genre, fmt, bitrate, target)
+        clean_genre = self._sanitize_component(genre or "Music")
+        target = Path(output_dir) if output_dir else self._job_folder("single", clean_genre)
+        return await self._start_job(url, "single", clean_genre, fmt, bitrate, target)
 
     async def download_playlist(self, url: str, genre: str, fmt: str, bitrate: str, output_dir: str | None = None) -> str:
-        target = Path(output_dir) if output_dir else self._job_folder("playlist", genre)
-        return await self._start_job(url, "playlist", genre, fmt, bitrate, target)
+        clean_genre = self._sanitize_component(genre or "Music")
+        target = Path(output_dir) if output_dir else self._job_folder("playlist", clean_genre)
+        return await self._start_job(url, "playlist", clean_genre, fmt, bitrate, target)
 
     async def download_podcast(self, url: str, output_dir: str | None = None) -> str:
         target = Path(output_dir) if output_dir else self._job_folder("podcast", "")

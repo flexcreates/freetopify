@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from server.auth import ensure_default_admin, router as auth_router
 from server.config import load_settings
@@ -37,7 +40,13 @@ async def lifespan(app: FastAPI):
 
     Path("data").mkdir(parents=True, exist_ok=True)
     Path("logs").mkdir(parents=True, exist_ok=True)
-    settings.music_library_path.mkdir(parents=True, exist_ok=True)
+    try:
+        settings.music_library_path.mkdir(parents=True, exist_ok=True)
+    except PermissionError as exc:
+        raise RuntimeError(
+            f"Cannot create or access MUSIC_LIBRARY_PATH={settings.music_library_path}. "
+            "Set a writable path in .env (example: /home/<user>/Music/freetopify)."
+        ) from exc
 
     _setup_logging(settings.log_file, settings.log_level)
     logging.info("Starting Freetopify server")
@@ -67,11 +76,13 @@ async def lifespan(app: FastAPI):
     app.state.watcher = LibraryWatcher(settings.music_library_path, loop, on_fs_event)
     app.state.watcher.start()
 
-    app.state.mdns = MDNSAdvertiser(settings.mdns_hostname, settings.server_port)
-    try:
-        app.state.mdns.start()
-    except Exception:
-        logging.exception("mDNS startup failed")
+    app.state.mdns = None
+    if settings.enable_mdns and not os.getenv("PYTEST_CURRENT_TEST"):
+        app.state.mdns = MDNSAdvertiser(settings.mdns_hostname, settings.server_port)
+        try:
+            await app.state.mdns.start()
+        except Exception:
+            logging.exception("mDNS startup failed")
 
     yield
 
@@ -80,10 +91,11 @@ async def lifespan(app: FastAPI):
     except Exception:
         logging.exception("Watcher shutdown failed")
 
-    try:
-        app.state.mdns.stop()
-    except Exception:
-        logging.exception("mDNS shutdown failed")
+    if app.state.mdns is not None:
+        try:
+            await app.state.mdns.stop()
+        except Exception:
+            logging.exception("mDNS shutdown failed")
 
 
 app = FastAPI(title="Freetopify Server", version="1.0.0", lifespan=lifespan)
@@ -92,6 +104,12 @@ app.include_router(system_router)
 app.include_router(library_router)
 app.include_router(stream_router)
 app.include_router(downloader_router)
+app.mount("/web", StaticFiles(directory="web"), name="web")
+
+
+@app.get("/")
+async def root_redirect():
+    return RedirectResponse(url="/web/index.html")
 
 
 @app.websocket("/ws/live")

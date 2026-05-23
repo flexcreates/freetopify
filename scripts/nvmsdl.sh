@@ -7,8 +7,8 @@
 # ============================================================
 
 # ── Paths ────────────────────────────────────────────────────
-VENV="$HOME/Venvs/navi"
-MUSIC_DIR="/opt/navidrome/music"
+VENV="${FREETOPIFY_VENV:-$HOME/Venvs/navi}"
+MUSIC_DIR="${FREETOPIFY_MUSIC_DIR:-$HOME/Music/freetopify}"
 PLAYLIST_ROOT="$MUSIC_DIR/Playlists"
 SINGLE_ROOT="$MUSIC_DIR/Singles"
 PODCAST_ROOT="$MUSIC_DIR/Podcasts"
@@ -234,7 +234,7 @@ draw_header() {
     TW=$(tput cols 2>/dev/null || echo 80)
     echo ""
     divider "=" "$BBLU"
-    center_text "  🎵  N A V I D R O M E   D O W N L O A D E R  v2  🎵  " "$BCYN"
+    center_text "  🎵  F R E E T O P I F Y   D O W N L O A D E R  v3  🎵  " "$BCYN"
     center_text "${DIM}yt-dlp powered • YouTube → Freetopify${R}" "$BBLK"
     divider "=" "$BBLU"
     echo ""
@@ -331,7 +331,7 @@ download_single() {
     download_with_template \
         "Single Track" \
         "$url" \
-        "$SINGLE_ROOT/%(uploader)s/Singles/%(title)s.%(ext)s" \
+        "$SINGLE_ROOT/%(uploader)s/%(title)s.%(ext)s" \
         "$(metadata_literal "$song_title")" \
         "$(metadata_literal "$song_title")" \
         "$(metadata_literal "$song_title")" \
@@ -417,7 +417,7 @@ draw_help() {
     echo ""
     echo -e " ${BBLU}${BOLD}Download:${R}"
     echo -e "  ${BCYN}YouTube playlist URL${R}  → auto-routes to ${BWHT}Playlists/<genre>/<playlist>${R}"
-    echo -e "  ${BCYN}YouTube video URL${R}     → auto-routes to ${BWHT}Singles/<uploader>/Singles${R}"
+    echo -e "  ${BCYN}YouTube video URL${R}     → auto-routes to ${BWHT}Singles/<uploader>${R}"
     echo -e "  ${BCYN}playlist <url>${R}        → force playlist layout"
     echo -e "  ${BCYN}single <url>${R}          → force singles layout"
     echo -e "  ${BCYN}podcast <url>${R}         → force podcast layout"

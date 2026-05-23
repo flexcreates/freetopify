@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import defaultdict, deque
 from datetime import UTC, datetime, timedelta
 
 import aiosqlite
@@ -12,6 +13,21 @@ from server.models import LoginRequest, LoginResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 security = HTTPBearer(auto_error=True)
+
+# Max 10 attempts per minute per IP.
+_LOGIN_WINDOW_SECONDS = 60
+_LOGIN_MAX_ATTEMPTS = 10
+_login_attempts: dict[str, deque[float]] = defaultdict(deque)
+
+
+def _check_login_rate_limit(ip: str) -> None:
+    now = datetime.now(UTC).timestamp()
+    q = _login_attempts[ip]
+    while q and (now - q[0]) > _LOGIN_WINDOW_SECONDS:
+        q.popleft()
+    if len(q) >= _LOGIN_MAX_ATTEMPTS:
+        raise HTTPException(status_code=429, detail="Too many login attempts")
+    q.append(now)
 
 
 def hash_password(password: str) -> str:
@@ -66,8 +82,27 @@ async def get_current_user(
     return str(subject)
 
 
+def get_current_user_from_request(request: Request, token_query: str | None = None) -> str:
+    token = token_query
+    if not token:
+        auth_header = request.headers.get("authorization", "")
+        if auth_header.lower().startswith("bearer "):
+            token = auth_header[7:].strip()
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing token")
+
+    payload = decode_access_token(request.app.state.settings.secret_key, token)
+    subject = payload.get("sub")
+    if not subject:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
+    return str(subject)
+
+
 @router.post("/login", response_model=LoginResponse)
 async def login(body: LoginRequest, request: Request) -> LoginResponse:
+    client = request.client.host if request.client else "unknown"
+    _check_login_rate_limit(client)
+
     settings = request.app.state.settings
     async with aiosqlite.connect(str(settings.database_path)) as db:
         cursor = await db.execute(

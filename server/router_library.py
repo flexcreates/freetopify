@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
 import aiosqlite
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
@@ -8,6 +10,16 @@ from server.models import BrowseResponse
 from server.router_stream import safe_path
 
 router = APIRouter(prefix="/api/v1/library", tags=["library"])
+AUDIO_EXTS = {".mp3", ".flac", ".ogg", ".m4a", ".aac", ".opus", ".wav", ".wv"}
+
+
+def _count_audio_recursive(folder) -> int:
+    total = 0
+    for root, _dirs, files in os.walk(folder):
+        for name in files:
+            if Path(name).suffix.lower() in AUDIO_EXTS:
+                total += 1
+    return total
 
 
 @router.get("/browse", response_model=BrowseResponse)
@@ -26,7 +38,7 @@ async def browse(
         rel = str(child.relative_to(settings.music_library_path))
         if child.is_dir():
             subfolders = sum(1 for x in child.iterdir() if x.is_dir())
-            tracks = sum(1 for x in child.iterdir() if x.is_file())
+            tracks = _count_audio_recursive(child)
             items.append(
                 {
                     "name": child.name,
@@ -37,6 +49,8 @@ async def browse(
                 }
             )
         else:
+            if child.suffix.lower() not in AUDIO_EXTS:
+                continue
             ext = child.suffix.lower().lstrip(".")
             items.append(
                 {

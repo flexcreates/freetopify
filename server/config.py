@@ -25,6 +25,7 @@ class Settings:
     log_file: Path
     mdns_hostname: str
     tailscale_ip: str
+    enable_mdns: bool
 
 
 REQUIRED_KEYS = [
@@ -60,6 +61,13 @@ def _optional_env(key: str, default: str = "") -> str:
     return value
 
 
+def _optional_bool_env(key: str, default: bool) -> bool:
+    value = os.getenv(key)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 def load_settings() -> Settings:
     load_dotenv()
     missing = [key for key in REQUIRED_KEYS if os.getenv(key) is None]
@@ -83,4 +91,5 @@ def load_settings() -> Settings:
         log_file=Path(_required_env("LOG_FILE")),
         mdns_hostname=_required_env("MDNS_HOSTNAME"),
         tailscale_ip=_optional_env("TAILSCALE_IP", ""),
+        enable_mdns=_optional_bool_env("ENABLE_MDNS", False),
     )

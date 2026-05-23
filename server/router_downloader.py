@@ -6,7 +6,7 @@ import json
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
-from server.auth import get_current_user
+from server.auth import get_current_user, get_current_user_from_request
 from server.models import DownloadStartRequest
 
 router = APIRouter(prefix="/api/v1/download", tags=["download"])
@@ -19,6 +19,11 @@ async def start_download(body: DownloadStartRequest, request: Request, _user: st
     job_type = body.type
     if job_type == "auto":
         job_type = "playlist" if "list=" in body.url else "single"
+
+    if body.format not in {"mp3", "flac"}:
+        raise HTTPException(status_code=400, detail="format must be mp3 or flac")
+    if job_type not in {"single", "playlist", "podcast", "mix"}:
+        raise HTTPException(status_code=400, detail="invalid download type")
 
     try:
         if job_type == "podcast":
@@ -58,7 +63,8 @@ async def cancel_job(job_id: str, request: Request, _user: str = Depends(get_cur
 
 
 @router.get("/progress/{job_id}")
-async def progress(job_id: str, request: Request, _user: str = Depends(get_current_user)):
+async def progress(job_id: str, request: Request, token: str | None = None):
+    get_current_user_from_request(request, token_query=token)
     downloader = request.app.state.downloader
 
     async def stream():
