@@ -49,10 +49,26 @@
     <h1>Freetopify</h1>
     <form id="login-form" class="login-form">
       <input id="username" class="text-input" placeholder="Username" required />
-      <input id="password" class="text-input" type="password" placeholder="Password" required />
+      <div style="position: relative; width: 100%;">
+        <input id="password" class="text-input" type="password" placeholder="Password" required style="width: 100%; padding-right: 40px;" />
+        <button type="button" id="toggle-pwd" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #b3cae3; font-size: 16px; padding: 4px;">👁️</button>
+      </div>
       <button type="submit" class="primary-btn" style="margin-top: 8px;">Login</button>
     </form>
   </main>
   <script type="module" src="/web/js/auth.js"></script>
+  <script>
+    const pwd = document.getElementById('password');
+    const toggle = document.getElementById('toggle-pwd');
+    toggle.addEventListener('click', () => {
+      if (pwd.type === 'password') {
+        pwd.type = 'text';
+        toggle.textContent = '🙈';
+      } else {
+        pwd.type = 'password';
+        toggle.textContent = '👁️';
+      }
+    });
+  </script>
 </body>
 </html>
