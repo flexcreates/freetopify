@@ -218,6 +218,9 @@ a { color: inherit; }
   color: #fff;
   background: rgba(255, 255, 255, 0.1);
 }
+.ctl-active {
+  color: var(--blue);
+}
 
 .ctl-main {
   width: 44px;

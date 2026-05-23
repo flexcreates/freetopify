@@ -1,6 +1,9 @@
 let audio;
 let queue = [];
+let originalQueue = [];
 let queueIndex = -1;
+let shuffleMode = false;
+let repeatMode = false;
 let listeners = [];
 const tokenKey = 'freetopify_token';
 const volumeKey = 'freetopify_volume';
@@ -47,12 +50,27 @@ export function getPlayerState() {
     queue,
     queueIndex,
     track: currentTrack(),
+    shuffle: shuffleMode,
+    repeat: repeatMode,
   };
 }
 
 export function setQueue(items, startIndex = 0) {
-  queue = items.slice();
-  queueIndex = startIndex;
+  originalQueue = items.slice();
+  if (shuffleMode) {
+    const currentItem = originalQueue[startIndex];
+    const rest = originalQueue.filter((_, i) => i !== startIndex);
+    // Fisher-Yates shuffle
+    for (let i = rest.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [rest[i], rest[j]] = [rest[j], rest[i]];
+    }
+    queue = currentItem ? [currentItem, ...rest] : rest;
+    queueIndex = 0;
+  } else {
+    queue = originalQueue.slice();
+    queueIndex = startIndex;
+  }
   playCurrent();
   notify();
 }
@@ -79,6 +97,13 @@ export function next() {
   if (queueIndex + 1 < queue.length) {
     queueIndex += 1;
     playCurrent();
+  } else if (repeatMode && queue.length > 0) {
+    queueIndex = 0;
+    playCurrent();
+  } else {
+    const a = ensurePlayer();
+    a.pause();
+    a.currentTime = 0;
   }
   notify();
 }
@@ -108,6 +133,30 @@ export function setVolume(value) {
   const a = ensurePlayer();
   a.volume = Math.max(0, Math.min(1, value));
   localStorage.setItem(volumeKey, String(a.volume));
+  notify();
+}
+
+export function toggleShuffle() {
+  shuffleMode = !shuffleMode;
+  const current = currentTrack();
+  if (shuffleMode) {
+    const rest = originalQueue.filter((t) => t.path !== current?.path);
+    for (let i = rest.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [rest[i], rest[j]] = [rest[j], rest[i]];
+    }
+    queue = current ? [current, ...rest] : rest;
+    queueIndex = 0;
+  } else {
+    queue = originalQueue.slice();
+    queueIndex = queue.findIndex((t) => t.path === current?.path);
+    if (queueIndex === -1) queueIndex = 0;
+  }
+  notify();
+}
+
+export function toggleRepeat() {
+  repeatMode = !repeatMode;
   notify();
 }
 

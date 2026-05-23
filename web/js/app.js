@@ -2,7 +2,7 @@ import { apiGet, clearToken, getToken } from '/web/js/api.js';
 import { logout } from '/web/js/auth.js';
 import { renderDownloads } from '/web/js/downloader.js';
 import { getCurrentLibraryPath, renderLibrary, goBackOne, hasHistory } from '/web/js/library.js';
-import { bindKeyboardShortcuts, getPlayerState, next, onPlayerStateChange, prev, seekToPercent, setVolume, togglePlay } from '/web/js/player.js';
+import { bindKeyboardShortcuts, getPlayerState, next, onPlayerStateChange, prev, seekToPercent, setVolume, togglePlay, toggleRepeat, toggleShuffle } from '/web/js/player.js';
 import { connectLiveUpdates } from '/web/js/websocket.js';
 
 const app = document.getElementById('app');
@@ -59,6 +59,9 @@ function updateNowBar() {
   seek.value = state.duration ? String(Math.floor((state.currentTime / state.duration) * 100)) : '0';
   vol.value = String(Math.round((state.volume || 0) * 100));
 
+  document.getElementById('btn-shuffle').classList.toggle('ctl-active', state.shuffle);
+  document.getElementById('btn-repeat').classList.toggle('ctl-active', state.repeat);
+
   if (track?.path) {
     const token = localStorage.getItem('freetopify_token') || '';
     const artUrl = `/thumbnail/${encodeURIComponent(track.path)}?token=${encodeURIComponent(token)}`;
@@ -107,9 +110,11 @@ function updateNowBar() {
 }
 
 function bindNowBar() {
+  document.getElementById('btn-shuffle').addEventListener('click', () => toggleShuffle());
   document.getElementById('btn-prev').addEventListener('click', () => prev());
   document.getElementById('btn-play').addEventListener('click', () => togglePlay());
   document.getElementById('btn-next').addEventListener('click', () => next());
+  document.getElementById('btn-repeat').addEventListener('click', () => toggleRepeat());
   document.getElementById('seek').addEventListener('input', (e) => seekToPercent(Number(e.target.value)));
   document.getElementById('volume').addEventListener('input', (e) => setVolume(Number(e.target.value) / 100));
 
