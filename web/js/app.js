@@ -1,12 +1,28 @@
 import { apiGet, clearToken, getToken } from '/web/js/api.js';
 import { logout } from '/web/js/auth.js';
 import { renderDownloads } from '/web/js/downloader.js';
-import { getCurrentLibraryPath, renderLibrary } from '/web/js/library.js';
+import { getCurrentLibraryPath, renderLibrary, goBackOne, hasHistory } from '/web/js/library.js';
 import { bindKeyboardShortcuts, getPlayerState, next, onPlayerStateChange, prev, seekToPercent, setVolume, togglePlay } from '/web/js/player.js';
 import { connectLiveUpdates } from '/web/js/websocket.js';
 
 const app = document.getElementById('app');
 const queueList = document.getElementById('queue-list');
+const globalBackBtn = document.getElementById('btn-global-back');
+
+function updateGlobalBackButton() {
+  if (!globalBackBtn) return;
+  globalBackBtn.disabled = !hasHistory();
+}
+
+if (globalBackBtn) {
+  globalBackBtn.addEventListener('click', async () => {
+    const prev = goBackOne();
+    if (prev !== null) {
+      await renderLibrary(app, prev, true);
+      updateGlobalBackButton();
+    }
+  });
+}
 
 function fmtDuration(seconds) {
   if (!seconds || Number.isNaN(seconds)) return '0:00';
@@ -188,3 +204,7 @@ connectLiveUpdates((payload) => {
 });
 updateNowBar();
 renderRoute();
+// Keep global back button state in sync
+window.addEventListener('freetopify:history-changed', updateGlobalBackButton);
+window.addEventListener('freetopify:meta-saved', updateGlobalBackButton);
+updateGlobalBackButton();

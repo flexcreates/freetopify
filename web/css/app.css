@@ -396,24 +396,76 @@ input[type="range"] {
 
 .folder-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
 }
 
 .folder-card {
-  border: 1px solid rgba(98, 168, 255, 0.16);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
   background: #0c1b2b;
-  color: var(--text);
+  border: 1px solid rgba(98, 168, 255, 0.16);
   padding: 12px;
-  border-radius: var(--radius-sm);
-  text-align: left;
+  border-radius: var(--radius-md);
   cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(189,231,255,0.04);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .folder-card:hover {
   border-color: rgba(126, 188, 255, 0.52);
   background: #122943;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(3, 8, 20, 0.28);
+}
+
+.folder-card-cover-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #1d4578, #0a1730);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.folder-card-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms ease;
+}
+
+.folder-card:hover .folder-card-cover {
+  transform: scale(1.08);
+}
+
+.folder-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.folder-card-body strong {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folder-card .track-ext {
+  color: var(--muted);
+  font-size: 0.85rem;
 }
 
 .track-table {
@@ -568,3 +620,30 @@ input[type="range"] {
     height: 118px;
   }
 }
+
+/* Modal metadata editor */
+.meta-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(2, 6, 12, 0.6);
+  z-index: 9998;
+}
+.meta-panel {
+  width: min(760px, 92%);
+  max-height: 86vh;
+  overflow: auto;
+  padding: 18px;
+  box-shadow: 0 20px 60px rgba(2,10,22,0.7);
+}
+.meta-panel .text-input {
+  width: 100%;
+}
+
+.meta-panel textarea.text-input {
+  min-height: 80px;
+  resize: vertical;
+}
+
+
