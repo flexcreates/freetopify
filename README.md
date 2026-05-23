@@ -9,9 +9,9 @@ Self-hosted, folder-first music server.
 - Android plan: `docs/android.md`
 
 ## Current Status
-- Server core implemented
-- Server API starter tests passing (`3 passed`)
-- Next phase: Web UI implementation
+- Server core implemented and validated
+- Web UI (light client) implemented
+- Next phase: Flutter Android App implementation
 
 ## Quick Start
 ```bash
@@ -23,3 +23,7 @@ uvicorn server.main:app --host 0.0.0.0 --port 7171
 
 ## Default Health URL
 - `http://127.0.0.1:7171/api/v1/system/health`
+
+## License
+This project is licensed under the [Freetopify Personal Use License](LICENSE). 
+It is free for personal use. Commercial use and monetization are strictly prohibited without explicit written permission.
