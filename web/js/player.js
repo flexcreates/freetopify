@@ -81,8 +81,20 @@ export function playCurrent() {
   if (!item) return;
   const token = localStorage.getItem(tokenKey) || '';
   const streamPath = `/stream/${encodeURI(item.path)}`;
-  a.src = token ? `${streamPath}?token=${encodeURIComponent(token)}` : streamPath;
-  a.play().catch(() => {});
+  const newSrc = token ? `${streamPath}?token=${encodeURIComponent(token)}` : streamPath;
+  
+  // Browsers resolve a.src to an absolute URL, so we construct one for comparison
+  const absoluteNewSrc = new URL(newSrc, window.location.origin).href;
+
+  if (a.src === absoluteNewSrc) {
+    // If it's the exact same track (e.g. queue loop with 1 song), just reset time
+    a.currentTime = 0;
+    a.play().catch(() => {});
+  } else {
+    a.src = newSrc;
+    a.load();
+    a.play().catch(() => {});
+  }
   notify();
 }
 
