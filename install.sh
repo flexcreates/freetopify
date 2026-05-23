@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "[freetopify] install start"
+echo "================================================="
+echo "        Freetopify Interactive Installer         "
+echo "================================================="
+echo ""
 
 OS_NAME="$(uname -s || echo unknown)"
 USER_HOME="${HOME:-/home/$(whoami)}"
@@ -17,12 +20,15 @@ pick_pkg() {
   return 1
 }
 
+echo "[1/3] Checking System Dependencies..."
 if command -v apt >/dev/null 2>&1; then
-  echo "[freetopify] apt found"
   py_minor="$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
   venv_pkg="$(pick_pkg "python${py_minor}-venv" "python3-venv" || true)"
   pip_pkg="$(pick_pkg "python3-pip" || true)"
-  install_pkgs=(sqlite3 ffmpeg yt-dlp curl bluez bluez-tools)
+  install_pkgs=(sqlite3 ffmpeg curl bluez bluez-tools)
+  
+  # Note: yt-dlp installed via pip later is usually better, but we can install the apt one as a fallback
+  
   if [ -n "${venv_pkg:-}" ]; then install_pkgs+=("$venv_pkg"); fi
   if [ -n "${pip_pkg:-}" ]; then install_pkgs+=("$pip_pkg"); fi
 
@@ -30,32 +36,35 @@ if command -v apt >/dev/null 2>&1; then
     sudo apt update
     sudo apt install -y "${install_pkgs[@]}"
   else
-    echo "[freetopify] sudo password needed. run this manually:"
-    echo "sudo apt update && sudo apt install -y ${install_pkgs[*]}"
+    echo "⚠️  Sudo permission is required to install system dependencies (ffmpeg, sqlite3, python-venv)."
+    sudo apt update
+    sudo apt install -y "${install_pkgs[@]}"
   fi
+  echo "✅ System dependencies installed."
+else
+  echo "⚠️  Non-APT system detected. Please manually ensure python3-venv, ffmpeg, and sqlite3 are installed."
 fi
 
-# Configure music library path based on OS.
-if [ "$OS_NAME" = "Linux" ]; then
-  mkdir -p "$DEFAULT_MUSIC_PATH"
-  echo "[freetopify] linux detected -> music library: $DEFAULT_MUSIC_PATH"
+echo ""
+echo "[2/3] Configuring Library..."
+read -p "Enter the full path where you want to create your Music Library [$DEFAULT_MUSIC_PATH]: " USER_MUSIC_PATH
+MUSIC_LIBRARY_PATH="${USER_MUSIC_PATH:-$DEFAULT_MUSIC_PATH}"
 
-  if [ -f .env ]; then
-    if grep -q '^MUSIC_LIBRARY_PATH=' .env; then
-      sed -i "s#^MUSIC_LIBRARY_PATH=.*#MUSIC_LIBRARY_PATH=$DEFAULT_MUSIC_PATH#" .env
-    else
-      printf '\nMUSIC_LIBRARY_PATH=%s\n' "$DEFAULT_MUSIC_PATH" >> .env
-    fi
+mkdir -p "$MUSIC_LIBRARY_PATH"
+echo "✅ Music library ready at: $MUSIC_LIBRARY_PATH"
+
+if [ -f .env ]; then
+  if grep -q '^MUSIC_LIBRARY_PATH=' .env; then
+    sed -i "s#^MUSIC_LIBRARY_PATH=.*#MUSIC_LIBRARY_PATH=$MUSIC_LIBRARY_PATH#" .env
   else
-    if [ -f .env.example ]; then
-      cp .env.example .env
-      sed -i "s#^MUSIC_LIBRARY_PATH=.*#MUSIC_LIBRARY_PATH=$DEFAULT_MUSIC_PATH#" .env
-    else
-      cat > .env <<EOF
-MUSIC_LIBRARY_PATH=$DEFAULT_MUSIC_PATH
+    printf '\nMUSIC_LIBRARY_PATH=%s\n' "$MUSIC_LIBRARY_PATH" >> .env
+  fi
+else
+  cat > .env <<EOF
+MUSIC_LIBRARY_PATH=$MUSIC_LIBRARY_PATH
 SERVER_PORT=7171
 SERVER_HOST=0.0.0.0
-SECRET_KEY=CHANGE_ME_GENERATE_A_REAL_SECRET_KEY_HERE
+SECRET_KEY=$(head -c 32 /dev/urandom | base64)
 TOKEN_EXPIRE_HOURS=720
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=freetopify
@@ -70,23 +79,36 @@ MDNS_HOSTNAME=freetopify
 ENABLE_MDNS=false
 TAILSCALE_IP=
 EOF
-    fi
-  fi
-else
-  echo "[freetopify] non-linux OS detected ($OS_NAME); keeping MUSIC_LIBRARY_PATH from existing .env"
+  echo "✅ Auto-generated .env configuration."
 fi
 
+echo ""
+echo "[3/3] Setting up Python Virtual Environment..."
 if [ ! -d venv ]; then
-  python3 -m venv venv || true
+  python3 -m venv venv
 fi
 
 if [ -x venv/bin/pip ]; then
   source venv/bin/activate
   pip install --upgrade pip
+  # yt-dlp is best installed via pip to ensure the latest version for YouTube extraction fixes
+  pip install yt-dlp
   pip install -r requirements.txt
+  echo "✅ Python dependencies installed."
 else
-  echo "[freetopify] venv/pip missing. install python3-venv + python3-pip first."
+  echo "❌ Error: Virtual environment was not created properly."
+  exit 1
 fi
 
-echo "[freetopify] optional BT NAP: sudo bt-network -s nap"
-echo "[freetopify] install done"
+echo ""
+echo "================================================="
+echo "        🎉 Freetopify is ready to run! 🎉        "
+echo "================================================="
+echo "To start the server manually, run:"
+echo "  source venv/bin/activate"
+echo "  uvicorn server.main:app --host 0.0.0.0 --port 7171"
+echo ""
+echo "To install it as a background service so it auto-starts on boot:"
+echo "  sudo cp freetopify.service /etc/systemd/system/"
+echo "  sudo systemctl enable --now freetopify"
+echo "================================================="
