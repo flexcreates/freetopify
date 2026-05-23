@@ -8,13 +8,13 @@
 - [x] Phase 1: Environment Verification
 - [x] Phase 2: Project Scaffold
 - [x] Phase 3: Server Core
-- [~] Phase 4: Web UI
-- [ ] Phase 5: Flutter Android App
+- [x] Phase 4: Web UI
+- [~] Phase 5: Flutter Android App
 - [ ] Phase 6: Integration Testing
 - [ ] Phase 7: Final Report
 
 ## Current Task
-Server phase done and validated. Web UI scaffolding prepared; next build full web modules.
+Web UI fully implemented and polished. Next phase is developing the Flutter Android application (Phase 5).
 
 ## Completed Tasks
 - Built full server module set in required order
@@ -34,6 +34,12 @@ Server phase done and validated. Web UI scaffolding prepared; next build full we
 - Added starter API tests (`server/tests/test_api.py`)
 - Updated `install.sh` to handle sudo/non-sudo paths with clear instructions
 - Static syntax check passed (`python3 -m py_compile server/*.py server/tests/test_api.py`)
+- Implemented full Vanilla JS SPA modules (`web/js/app.js`, `api.js`, `auth.js`, `downloader.js`, `library.js`, `player.js`, `websocket.js`)
+- Implemented UI styling system in `web/css/app.css` (folder cards, sleek bottom player, responsive layout)
+- Fixed backend thumbnail extraction logic and UI placeholder scaling
+- Reorganized filesystem to enforce pure flat structures for Singles and root-level Playlists
+- Fixed historical routing logic for web library browser
+- Generated and pushed `LICENSE` file for the project
 
 ## Known Issues
 - Dependency install requires sudo password in this environment (non-interactive run cannot provide password)
