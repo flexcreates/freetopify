@@ -156,12 +156,12 @@ export async function renderLibrary(mount, path = '', isBack = false) {
   mount.innerHTML = `
     <section class="panel">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-        <div class="section-title" style="margin:0;">Library</div>
+        <div class="section-title" style="margin:0;">${path ? 'Library' : 'Folders'}</div>
         <button id="play-all" class="primary-btn">Play All</button>
       </div>
       ${breadcrumb(path) ? `<div class="crumb">${breadcrumb(path)}</div>` : ''}
 
-      <div class="section-title" style="margin-top:16px;">Folders</div>
+      ${path ? `<div class="section-title" style="margin-top:16px;">Folders</div>` : ''}
       <div class="folder-grid">
         ${folders.map((f) => `
           <button class="folder-card" data-folder="${esc(f.path)}">
