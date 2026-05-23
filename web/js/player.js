@@ -19,7 +19,10 @@ function ensurePlayer() {
   audio.preload = 'metadata';
   const saved = Number(localStorage.getItem(volumeKey));
   audio.volume = Number.isFinite(saved) ? Math.max(0, Math.min(1, saved)) : 0.8;
-  audio.addEventListener('ended', () => next());
+  audio.addEventListener('ended', () => {
+    console.log('[PLAYER] audio "ended" event fired.');
+    next();
+  });
   audio.addEventListener('timeupdate', notify);
   audio.addEventListener('play', notify);
   audio.addEventListener('pause', notify);
@@ -85,15 +88,18 @@ export function playCurrent() {
   const streamPath = `/stream/${encodedPath}`;
   const newSrc = token ? `${streamPath}?token=${encodeURIComponent(token)}` : streamPath;
 
+  console.log(`[PLAYER] playCurrent() called. item.path: ${item.path}`);
   if (a.getAttribute('data-playing-path') === item.path) {
     // Exact same track (e.g. single song loop) - just rewind
+    console.log(`[PLAYER] Exact same track detected. Rewinding currentTime to 0.`);
     a.currentTime = 0;
-    a.play().catch(() => {});
+    a.play().catch(e => console.error('[PLAYER] Play error:', e));
   } else {
+    console.log(`[PLAYER] New track detected. Updating src and calling load().`);
     a.setAttribute('data-playing-path', item.path);
     a.src = newSrc;
     a.load();
-    a.play().catch(() => {});
+    a.play().catch(e => console.error('[PLAYER] Play error:', e));
   }
   notify();
 }
@@ -106,13 +112,17 @@ export function togglePlay() {
 }
 
 export function next() {
+  console.log(`[PLAYER] next() called. queueIndex: ${queueIndex}, queue.length: ${queue.length}, repeatMode: ${repeatMode}`);
   if (queueIndex + 1 < queue.length) {
     queueIndex += 1;
+    console.log(`[PLAYER] Moving to next track in queue. New queueIndex: ${queueIndex}`);
     playCurrent();
   } else if (repeatMode && queue.length > 0) {
     queueIndex = 0;
+    console.log(`[PLAYER] End of queue reached. Repeat mode is ON. Wrapping around to queueIndex: 0`);
     playCurrent();
   } else {
+    console.log(`[PLAYER] End of queue reached. Repeat mode is OFF. Stopping playback.`);
     const a = ensurePlayer();
     a.pause();
     a.currentTime = 0;
