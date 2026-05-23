@@ -182,6 +182,12 @@ export function toggleShuffle() {
     }
     queue = current ? [current, ...rest] : rest;
     queueIndex = 0;
+    
+    // User requested that toggling shuffle immediately picks a random song
+    if (rest.length > 0 && current && !ensurePlayer().paused) {
+      next();
+      return; // next() will call notify()
+    }
   } else {
     queue = originalQueue.slice();
     queueIndex = queue.findIndex((t) => t.path === current?.path);
