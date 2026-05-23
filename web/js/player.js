@@ -1,6 +1,5 @@
 let audio;
 let queue = [];
-let originalQueue = [];
 let queueIndex = -1;
 let shuffleMode = false;
 let repeatMode = false;
@@ -64,21 +63,8 @@ export function getPlayerState() {
 }
 
 export function setQueue(items, startIndex = 0) {
-  originalQueue = items.slice();
-  if (shuffleMode) {
-    const currentItem = originalQueue[startIndex];
-    const rest = originalQueue.filter((_, i) => i !== startIndex);
-    // Fisher-Yates shuffle
-    for (let i = rest.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [rest[i], rest[j]] = [rest[j], rest[i]];
-    }
-    queue = currentItem ? [currentItem, ...rest] : rest;
-    queueIndex = 0;
-  } else {
-    queue = originalQueue.slice();
-    queueIndex = startIndex;
-  }
+  queue = items.slice();
+  queueIndex = startIndex;
   playCurrent();
   notify();
 }
@@ -118,24 +104,29 @@ export function togglePlay() {
 
 export function next() {
   console.log(`[PLAYER] next() called. queueIndex: ${queueIndex}, queue.length: ${queue.length}`);
-  if (queueIndex + 1 < queue.length) {
-    queueIndex += 1;
-    console.log(`[PLAYER] Moving to next track in queue. New queueIndex: ${queueIndex}`);
-    playCurrent();
-  } else if (queue.length > 0) {
-    // Permanent playlist loop!
-    if (shuffleMode) {
-      console.log(`[PLAYER] End of shuffled queue. Generating fresh random queue for the new loop!`);
-      const newQueue = originalQueue.slice();
-      for (let i = newQueue.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newQueue[i], newQueue[j]] = [newQueue[j], newQueue[i]];
-      }
-      queue = newQueue;
+  
+  if (queue.length === 0) return;
+
+  if (shuffleMode) {
+    let nextIdx = Math.floor(Math.random() * queue.length);
+    // Prevent immediate replay of the exact same track if possible
+    if (queue.length > 1 && nextIdx === queueIndex) {
+      nextIdx = (nextIdx + 1) % queue.length;
     }
-    queueIndex = 0;
-    console.log(`[PLAYER] End of queue reached. Permanent loop ON. Wrapping to queueIndex: 0`);
+    queueIndex = nextIdx;
+    console.log(`[PLAYER] Shuffle ON: Randomly picked track index ${queueIndex}`);
     playCurrent();
+  } else {
+    if (queueIndex + 1 < queue.length) {
+      queueIndex += 1;
+      console.log(`[PLAYER] Moving to next track in queue. New queueIndex: ${queueIndex}`);
+      playCurrent();
+    } else {
+      // Permanent playlist loop!
+      queueIndex = 0;
+      console.log(`[PLAYER] End of queue reached. Permanent loop ON. Wrapping to queueIndex: 0`);
+      playCurrent();
+    }
   }
   notify();
 }
@@ -149,21 +140,24 @@ export function prev() {
     return;
   }
 
-  if (queueIndex > 0) {
-    queueIndex -= 1;
-    playCurrent();
-  } else if (queue.length > 0) {
-    // Wrap around to the last song (Permanent Loop)
-    if (shuffleMode) {
-      const newQueue = originalQueue.slice();
-      for (let i = newQueue.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newQueue[i], newQueue[j]] = [newQueue[j], newQueue[i]];
-      }
-      queue = newQueue;
+  if (queue.length === 0) return;
+
+  if (shuffleMode) {
+    let prevIdx = Math.floor(Math.random() * queue.length);
+    if (queue.length > 1 && prevIdx === queueIndex) {
+      prevIdx = (prevIdx - 1 + queue.length) % queue.length;
     }
-    queueIndex = queue.length - 1;
+    queueIndex = prevIdx;
     playCurrent();
+  } else {
+    if (queueIndex > 0) {
+      queueIndex -= 1;
+      playCurrent();
+    } else {
+      // Wrap around to the last song (Permanent Loop)
+      queueIndex = queue.length - 1;
+      playCurrent();
+    }
   }
   notify();
 }
@@ -190,20 +184,6 @@ export function setVolume(value) {
 
 export function toggleShuffle() {
   shuffleMode = !shuffleMode;
-  const current = currentTrack();
-  if (shuffleMode) {
-    const rest = originalQueue.filter((t) => t.path !== current?.path);
-    for (let i = rest.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [rest[i], rest[j]] = [rest[j], rest[i]];
-    }
-    queue = current ? [current, ...rest] : rest;
-    queueIndex = 0;
-  } else {
-    queue = originalQueue.slice();
-    queueIndex = queue.findIndex((t) => t.path === current?.path);
-    if (queueIndex === -1) queueIndex = 0;
-  }
   notify();
 }
 
