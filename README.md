@@ -1,6 +1,8 @@
 # Freetopify
 
-Self-hosted, folder-first music server.
+Self-hosted, folder-first music server with a Gen Z neon glassmorphism web client.
+
+![Freetopify — Now Playing view](docs/assets/preview.png)
 
 ## Docs Map
 - PRD index: `docs/prd.md`
