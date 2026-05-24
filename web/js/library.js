@@ -103,27 +103,56 @@ function parentPath(path) {
     hideMenu(document.getElementById('fm-context-menu'));
     const menu = document.createElement('div');
     menu.id = 'fm-context-menu';
-    menu.style.position = 'fixed';
-    menu.style.left = x + 'px';
-    menu.style.top = y + 'px';
-    menu.style.zIndex = 9999;
-    menu.style.background = '#071526';
-    menu.style.border = '1px solid rgba(126,188,255,0.12)';
-    menu.style.padding = '6px';
-    menu.style.borderRadius = '6px';
-    menu.style.boxShadow = '0 8px 24px rgba(2,10,22,0.6)';
+    // Clamp position so menu doesn't go off-screen
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const menuW = 180, menuH = items.length * 36 + 12;
+    const left = Math.min(x, vw - menuW - 8);
+    const top  = Math.min(y, vh - menuH - 8);
+    Object.assign(menu.style, {
+      position: 'fixed',
+      left: left + 'px',
+      top:  top  + 'px',
+      zIndex: '9999',
+      minWidth: menuW + 'px',
+      background: 'rgba(8, 6, 22, 0.92)',
+      border: '1px solid rgba(124,58,237,0.32)',
+      padding: '6px',
+      borderRadius: '14px',
+      boxShadow: '0 0 0 1px rgba(236,72,153,0.08) inset, 0 16px 48px rgba(0,0,0,0.8), 0 0 24px rgba(124,58,237,0.2)',
+      backdropFilter: 'blur(20px)',
+      animation: 'menuPop 0.18s cubic-bezier(0.34,1.56,0.64,1) both',
+    });
+    // inject keyframe once
+    if (!document.getElementById('fm-menu-style')) {
+      const s = document.createElement('style');
+      s.id = 'fm-menu-style';
+      s.textContent = `@keyframes menuPop { from { transform: scale(0.88) translateY(-4px); opacity:0; } to { transform: scale(1) translateY(0); opacity:1; } }`;
+      document.head.appendChild(s);
+    }
     items.forEach((it) => {
       const el = document.createElement('div');
       el.textContent = it.label;
-      el.style.padding = '6px 10px';
-      el.style.cursor = 'pointer';
-      el.style.color = '#dfeefb';
+      Object.assign(el.style, {
+        padding: '8px 14px',
+        cursor: 'pointer',
+        color: '#d0c8f8',
+        fontSize: '0.88rem',
+        fontWeight: '600',
+        borderRadius: '10px',
+        transition: 'background 0.12s, color 0.12s',
+      });
       el.addEventListener('click', () => {
         try { it.onClick(); } catch (e) { console.error(e); }
         hideMenu(menu);
       });
-      el.addEventListener('mouseenter', () => el.style.background = 'rgba(126,188,255,0.06)');
-      el.addEventListener('mouseleave', () => el.style.background = 'transparent');
+      el.addEventListener('mouseenter', () => {
+        el.style.background = 'rgba(124,58,237,0.22)';
+        el.style.color = '#fff';
+      });
+      el.addEventListener('mouseleave', () => {
+        el.style.background = 'transparent';
+        el.style.color = '#d0c8f8';
+      });
       menu.appendChild(el);
     });
     document.body.appendChild(menu);

@@ -1,6 +1,92 @@
 # Changelog
 This file records notable changes made to the Freetopify project as work progresses.
-The entries below represent an initial snapshot of the repository state and history up to 2026-05-24.
+
+---
+
+## 2026-05-24 — Gen Z UI/UX Redesign (Complete Frontend Overhaul)
+
+A full visual redesign of the Freetopify web client. All JS logic, player features,
+library navigation, auth, downloads, and API calls are **100% preserved** — this is a
+pure CSS/HTML frontend overhaul.
+
+### Design System — `web/css/variables.css`
+- Replaced 5 old flat color variables with **57 design tokens**
+- Neon palette: violet `#7c3aed` · pink `#ec4899` · cyan `#06b6d4` · amber `#f59e0b`
+- Added spring animation easing curves and duration tokens (`--ease-spring`, `--dur-fast`, `--dur-med`)
+- Glassmorphism surface levels: `--surface-0`, `--surface-1`, `--surface-2`
+- Neon glow shadow tokens: `--glow-violet`, `--glow-pink`, `--glow-cyan`
+- Font family tokens for Space Grotesk (headings) and Inter (body)
+
+### Typography — `web/css/reset.css`
+- Added Google Fonts `@import` for **Space Grotesk** (700 weight headings) and **Inter** (body)
+
+### App Styles — `web/css/app.css` (full rewrite, 1485 lines)
+
+Layout fixes:
+- `app-shell` grid: `220px minmax(0,1fr) 260px` — correct column widths, no overflow
+- `now-bar` grid: responsive `minmax()` 3-column — never breaks or clips at any viewport
+- `player-stage` grid: `clamp(200px,32%,300px) 1fr` — vinyl never overflows
+- `folder-grid`: `minmax(200px,1fr)` — folder cards fill correctly
+- `track-row-btn` grid: `36px 1fr auto auto` — track title never clips
+- `.view` is now a flex column with `padding:0`; `.view > .panel` takes `flex:1` and carries the padding — panels fill the full content area with zero dead space
+- `player-hero` uses `flex:1` (removed fixed `min-height:420px`) — vinyl card fills entire view
+- Sidebar: `flex-direction:column` + `align-self:start` — nav links compact at top, no spreading
+
+Visual & effects:
+- Animated 3-orb mesh gradient background (18s drift cycle)
+- All panels: glassmorphism `backdrop-filter: blur(20px)` + subtle shimmer gradient border
+- Sidebar: SVG icon + label nav links with neon active glow and slide-in indicator
+- Now-bar: violet→pink play button with glow, custom range sliders with neon thumb
+- Vinyl disk: `clamp()` sizing, concentric groove lines, ambient neon pulse animation, spinning state
+- Folder cards: glass surface, cover art or emoji fallback, hover lift + glow
+- Track rows: album art column, hover highlight, icon actions
+- Buttons: `primary-btn` = violet→pink gradient pill; `secondary-btn` = violet outline pill
+- Range inputs: custom thumb with neon glow, smooth height transition on hover
+- Section kicker labels in violet, gradient `h2` headings
+
+About page improvements:
+- Emoji icons (🏠 🔐 📱) for feature cards
+- "Connect" social links section with GitHub + Instagram pills
+- `@flexcreates` handle, "Day zero 🚀" project start flavour
+- Donate card with ☕ CTA and proper placeholder copy
+- Live elapsed timer with yr · mo · d · hr · min · sec format
+
+Context menu (`web/js/library.js`):
+- Glassmorphism dark bg `rgba(8,6,22,0.92)` + violet border
+- Spring `menuPop` keyframe animation (scale + translateY)
+- Viewport-clamped position — menu never clips off screen
+
+### Main App — `web/index.html`
+- Added Google Fonts `preconnect` + `link` tags
+- Added SVG icons to all 5 sidebar nav links (library, music note, download, gear, info)
+- Cache-bust version bumped to `v=20260524-8`
+
+### Login Page — `web/login.html`
+- Dual-layer animated mesh gradient background (12s cycle)
+- Glassmorphism card with shimmer border + spring entrance animation (`cardEntrance`)
+- Neon animated logo with drop-shadow pulse (`logoPulse`)
+- Role switcher tabs with violet glow on active state and spring hover lift
+- Polished form inputs with focus ring
+- Password visibility toggle (eye icon)
+- Proper `panelFade` animation when switching between Admin/Guest panels
+
+### JS — `web/js/app.js`
+- Queue items use CSS `.queue-item` + `.playing` classes (removed all inline styles)
+- Active queue track shows `▶` prefix indicator
+- Player view: uses proper CSS class structure for vinyl, ambient, meta
+- Settings view: inline `Check Connection` + `Logout` buttons (not full-width stretch)
+- About view: complete HTML rewrite with emoji feature cards, improved stats grid, donate card
+
+### Responsive Breakpoints — `web/css/app.css`
+Full 5-tier responsive system replacing the old 2-tier system:
+
+| Breakpoint | Layout |
+|---|---|
+| `≤1240px` | Queue panel hidden; sidebar narrows to 210px |
+| `≤1024px` | Sidebar narrows; now-bar shrinks; player stacks |
+| `≤900px` | Sidebar becomes horizontal tab bar at top; all columns collapse |
+| `≤600px` | Mobile: icons hidden (text only); touch targets ≥44px; player bar stacks |
+| `≤375px` | Brand hidden; 2-col folder grid; tightest spacing |
 
 ---
 
@@ -41,16 +127,6 @@ Notes and conventions
   - YYYY-MM-DD — Short summary
     - Files: path/to/file.py
     - Notes: optional longer detail
-
-Example entry (future):
-
-- 2026-05-25 — Add track metadata caching
-  - Files: `server/scanner.py`, `server/database.py`
-  - Notes: Adds in-memory cache to avoid repeated metadata extraction during scans.
-
----
-
-End of initial snapshot.
 
 ---
 
@@ -106,4 +182,3 @@ End of initial snapshot.
 - UI: added an About route in the web app with developer credits, official GitHub/Instagram links, project start date, and a live elapsed timer.
 - UI: included a donation / buy-a-coffee placeholder card matching the existing theme.
 - Docs: updated `README.md` and `docs/web.md` to mention the About page.
-

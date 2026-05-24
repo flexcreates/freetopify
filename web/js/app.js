@@ -3,7 +3,7 @@ import { logout } from '/web/js/auth.js';
 import { renderDownloads } from '/web/js/downloader.js';
 import { getCurrentLibraryPath, renderLibrary, goBackOne, hasHistory, showTrackContextMenu } from '/web/js/library.js';
 import { bindKeyboardShortcuts, getPlayerState, next, onPlayerStateChange, prev, seekToPercent, setVolume, togglePlay, toggleRepeat, toggleShuffle, jumpToQueueIndex } from '/web/js/player.js';
-import { connectLiveUpdates } from '/web/js/websocket.js?v=20260524-1';
+import { connectLiveUpdates } from '/web/js/websocket.js?v=20260524-8';
 
 const app = document.getElementById('app');
 const queueList = document.getElementById('queue-list');
@@ -112,8 +112,8 @@ function updateNowBar() {
     queueList.textContent = 'No tracks queued';
   } else {
     queueList.innerHTML = state.queue.map((t, i) => `
-      <div class="queue-item" data-idx="${i}" style="padding:7px 4px; border-bottom:1px solid rgba(98,168,255,.1); color:${i === state.queueIndex ? '#e6f2ff' : '#9db8d2'}; cursor:pointer; transition: background 0.2s; border-radius:4px;" onmouseover="this.style.background='rgba(126,188,255,0.06)'" onmouseout="this.style.background='transparent'">
-        ${i + 1}. ${escapeHtml(t.title || t.name || 'Track')}
+      <div class="queue-item${i === state.queueIndex ? ' playing' : ''}" data-idx="${i}">
+        ${i === state.queueIndex ? '▶ ' : `${i + 1}. `}${escapeHtml(t.title || t.name || 'Track')}
       </div>
     `).join('');
   }
@@ -196,43 +196,41 @@ function formatElapsedLabel(diff) {
 function renderAboutView() {
   const socialLinks = [
     {
-      href: 'https://github.com/flexcreates',
-      label: 'GitHub',
-      title: 'GitHub profile',
-      icon: 'github',
+      href: 'https://github.com/flexcreates', label: 'GitHub', title: 'GitHub profile', icon: 'github',
       svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.82.5 12.37c0 5.24 3.44 9.69 8.2 11.27.6.11.82-.27.82-.58 0-.29-.01-1.06-.02-2.08-3.34.75-4.04-1.66-4.04-1.66-.55-1.44-1.35-1.83-1.35-1.83-1.1-.78.08-.77.08-.77 1.22.09 1.86 1.28 1.86 1.28 1.08 1.9 2.84 1.35 3.53 1.03.11-.8.42-1.35.76-1.66-2.66-.31-5.46-1.37-5.46-6.1 0-1.35.47-2.45 1.24-3.32-.12-.31-.54-1.55.12-3.24 0 0 1.01-.33 3.3 1.27a11.1 11.1 0 0 1 6.01 0c2.29-1.6 3.3-1.27 3.3-1.27.66 1.69.24 2.93.12 3.24.77.87 1.24 1.97 1.24 3.32 0 4.74-2.81 5.78-5.48 6.09.43.37.82 1.1.82 2.22 0 1.61-.02 2.9-.02 3.29 0 .31.21.69.83.57A12.01 12.01 0 0 0 23.5 12.37C23.5 5.82 18.35.5 12 .5z"/></svg>`,
     },
     {
-      href: 'https://instagram.com/flexcreates',
-      label: 'Instagram',
-      title: 'Instagram profile',
-      icon: 'instagram',
+      href: 'https://instagram.com/flexcreates', label: 'Instagram', title: 'Instagram profile', icon: 'instagram',
       svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 2.5A5.5 5.5 0 1 1 6.5 12 5.51 5.51 0 0 1 12 6.5Zm0 2A3.5 3.5 0 1 0 15.5 12 3.5 3.5 0 0 0 12 8.5Zm5.75-3.65a1.2 1.2 0 1 1-1.2 1.2 1.2 1.2 0 0 1 1.2-1.2Z"/></svg>`,
     },
   ];
 
-  const startLabel = projectStart.toLocaleString(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'medium',
-  });
+  const startLabel = projectStart.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'medium' });
+
+  const features = [
+    { emoji: '🏠', tag: 'Local-first',   title: 'Home server & LAN ready',  desc: 'Zero CDN dependency. Runs fast inside your own network — instant access, no internet needed.' },
+    { emoji: '🔐', tag: 'Guest-friendly', title: 'PIN-gated sharing',         desc: 'Share read-only access via a simple PIN. Library stays safe, listening stays easy.' },
+    { emoji: '📱', tag: 'Responsive',     title: 'Every screen, perfectly fit', desc: 'Adapts to desktop, tablet, and phone. Layout, spacing, and player stay balanced everywhere.' },
+  ];
 
   app.innerHTML = `
     <section class="about-shell">
+
       <div class="about-hero">
-        <article class="about-card">
+        <article class="about-card about-main-card">
           <div class="about-title">
             <div>
-              <div class="about-kicker">Developer profile</div>
+              <div class="about-kicker">✦ Developer profile</div>
               <h2>About Freetopify</h2>
-              <div class="about-subtitle">Private, folder-first music hosting with a clean browser client, local-network access, and a focused admin workflow.</div>
+              <p class="about-subtitle">Private, folder-first music hosting with a clean browser client, local-network access, and a focused admin workflow.</p>
             </div>
-            <div class="about-badge" aria-hidden="true">Official</div>
+            <div class="about-badge">✦ Official</div>
           </div>
 
           <div class="about-links-block">
-            <div class="about-stat-label">Official links</div>
+            <div class="about-stat-label">Connect</div>
             <div class="social-row">
-              ${socialLinks.map((link) => `
+              ${socialLinks.map(link => `
                 <a class="social-link" href="${link.href}" target="_blank" rel="noreferrer" title="${link.title}">
                   <span class="social-icon ${link.icon}">${link.svg}</span>
                   <span>${link.label}</span>
@@ -245,71 +243,61 @@ function renderAboutView() {
             <div class="about-stat">
               <div class="about-stat-label">Developer</div>
               <div class="about-stat-value">Aditya Singh</div>
-              <div class="about-stat-small">Handle: flexcreates</div>
+              <div class="about-stat-small">@flexcreates</div>
             </div>
             <div class="about-stat">
-              <div class="about-stat-label">Project start</div>
+              <div class="about-stat-label">First build</div>
               <div class="about-stat-value">${escapeHtml(startLabel)}</div>
-              <div class="about-stat-small">Live since the first build.</div>
+              <div class="about-stat-small">Day zero 🚀</div>
             </div>
             <div class="about-stat countdown">
-              <div class="about-stat-label">Live elapsed</div>
+              <div class="about-stat-label">⏱ Live for</div>
               <div class="about-stat-value" id="project-elapsed">Loading...</div>
-              <div class="about-stat-small">Year · month · day · hour · minute · second</div>
+              <div class="about-stat-small">yr · mo · d · hr · min · sec</div>
             </div>
           </div>
         </article>
 
         <aside class="about-card donate-card">
-          <div class="about-title">
-            <div>
-              <div class="about-kicker">Support</div>
-              <h2>Donate / Buy a Coffee</h2>
-              <div class="about-subtitle">Placeholder area for support links. Add your preferred payment or coffee link here when ready.</div>
-            </div>
+          <div>
+            <div class="about-kicker">☕ Support</div>
+            <h2 class="donate-heading">Buy a Coffee</h2>
+            <p class="about-subtitle">If Freetopify has made your music life better, a coffee would mean the world. 💜</p>
           </div>
-          <a class="donate-cta" href="#" onclick="return false;">Add donation link</a>
-          <div class="donate-placeholder">This is a placeholder button for a future donation or coffee link. Replace it with your preferred URL when you want to publish it.</div>
+          <a class="donate-cta" href="#" onclick="return false;">☕ Add donation link</a>
+          <p class="donate-placeholder">Placeholder — swap the link above with your Ko-fi, Buy Me a Coffee, or PayPal when ready.</p>
         </aside>
       </div>
 
       <section class="about-strip">
-        <article class="about-mini-card">
-          <div class="about-stat-label">Built for local networks</div>
-          <div class="about-mini-title">Fast access on a home server or LAN</div>
-          <div class="about-mini-copy">Freetopify is designed to feel immediate on a browser inside your own network, with no CDN dependency and no visual clutter.</div>
-        </article>
-        <article class="about-mini-card">
-          <div class="about-stat-label">Guest friendly</div>
-          <div class="about-mini-title">PIN-gated access for sharing</div>
-          <div class="about-mini-copy">Guest mode keeps the surface simple while still allowing safe read-only listening when you want to share the library.
-          </div>
-        </article>
-        <article class="about-mini-card">
-          <div class="about-stat-label">Responsive by design</div>
-          <div class="about-mini-title">Desktop, tablet, and phone layouts</div>
-          <div class="about-mini-copy">The interface now adapts its placement, spacing, and card sizing so it stays balanced on laptops, desktops, iPhone, Android, and tablets.</div>
-        </article>
+        ${features.map(f => `
+          <article class="about-mini-card">
+            <div class="about-mini-icon">${f.emoji}</div>
+            <div class="about-stat-label">${f.tag}</div>
+            <div class="about-mini-title">${f.title}</div>
+            <div class="about-mini-copy">${f.desc}</div>
+          </article>
+        `).join('')}
       </section>
+
     </section>
   `;
 
   const elapsedEl = document.getElementById('project-elapsed');
-  const updateElapsed = () => {
-    if (!elapsedEl) return;
-    elapsedEl.textContent = formatElapsedLabel(formatElapsed(projectStart, new Date()));
-  };
+  const updateElapsed = () => { if (elapsedEl) elapsedEl.textContent = formatElapsedLabel(formatElapsed(projectStart, new Date())); };
   updateElapsed();
   if (aboutTimer) clearInterval(aboutTimer);
   aboutTimer = setInterval(updateElapsed, 1000);
 }
 
+
+
 function renderPlayerView() {
   const s = getPlayerState();
   app.innerHTML = `
-    <section class="panel player-hero" style="position: relative;">
-      <button id="btn-minimize" style="position: absolute; top: 16px; left: 16px; z-index: 10; background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; backdrop-filter: blur(4px); transition: background 0.2s;">
-        <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+    <section class="panel player-hero">
+      <button id="btn-minimize" class="ctl secondary-btn" style="position:absolute;top:14px;left:14px;z-index:10;width:38px;height:38px;padding:0;border-radius:50%;" title="Go back">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
       </button>
       <div class="player-ambient"></div>
       <div class="player-stage">
@@ -342,9 +330,11 @@ function renderSettings() {
   app.innerHTML = `
     <section class="panel">
       <div class="section-title">Settings</div>
-      <div class="form-grid">
-        <button id="check" class="primary-btn">Check Connection</button>
-        <button id="logout" class="primary-btn">Logout</button>
+      <div class="form-grid" style="gap:10px;">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button id="check" class="primary-btn">Check Connection</button>
+          <button id="logout" class="secondary-btn">Logout</button>
+        </div>
         <pre id="status" class="log"></pre>
       </div>
     </section>

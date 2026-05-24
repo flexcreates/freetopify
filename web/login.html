@@ -3,123 +3,222 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login - Freetopify</title>
-  <link rel="stylesheet" href="/web/css/reset.css?v=20260524-5" />
-  <link rel="stylesheet" href="/web/css/variables.css?v=20260524-5" />
-  <link rel="stylesheet" href="/web/css/app.css?v=20260524-5" />
+  <meta name="description" content="Sign in to Freetopify — your private music server." />
+  <title>Login — Freetopify</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/web/css/reset.css?v=20260524-8" />
+  <link rel="stylesheet" href="/web/css/variables.css?v=20260524-8" />
+  <link rel="stylesheet" href="/web/css/app.css?v=20260524-8" />
   <style>
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(600px 300px at 50% 12%, rgba(126, 188, 255, 0.12), transparent 60%),
-        radial-gradient(500px 220px at 18% 28%, rgba(74, 163, 255, 0.08), transparent 55%);
-      opacity: 0.9;
-    }
+    /* ── Login page overrides ── */
     body {
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      padding: 24px;
+      height: 100dvh;
+      padding: 20px;
+      overflow: hidden;
     }
+
+    /* animated mesh orbs for login */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle 700px at 20% 30%,  rgba(124,58,237,0.22), transparent),
+        radial-gradient(circle 600px at 80% 70%,  rgba(236,72,153,0.18), transparent),
+        radial-gradient(circle 500px at 60% 15%,  rgba(6,182,212,0.12), transparent);
+      pointer-events: none;
+      animation: loginMesh 12s ease-in-out infinite alternate;
+    }
+
+    @keyframes loginMesh {
+      0%   { transform: translate(0,0) scale(1); }
+      50%  { transform: translate(30px,20px) scale(1.06); }
+      100% { transform: translate(-15px,35px) scale(0.96); }
+    }
+
+    /* floating particles */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(2px 2px at 15% 25%, rgba(124,58,237,0.6), transparent),
+        radial-gradient(2px 2px at 80% 15%, rgba(236,72,153,0.6), transparent),
+        radial-gradient(2px 2px at 60% 75%, rgba(6,182,212,0.5), transparent),
+        radial-gradient(1px 1px at 40% 50%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(1px 1px at 90% 40%, rgba(124,58,237,0.5), transparent),
+        radial-gradient(1px 1px at 25% 80%, rgba(236,72,153,0.4), transparent);
+      pointer-events: none;
+      animation: particleDrift 20s linear infinite;
+    }
+
+    @keyframes particleDrift {
+      0%   { transform: translateY(0); opacity: 0.8; }
+      100% { transform: translateY(-40px); opacity: 1; }
+    }
+
+    /* ── Card ── */
     .login-card {
-      width: 100%;
-      max-width: 420px;
-      padding: 28px;
-      background: linear-gradient(180deg, rgba(29,69,120,0.48), rgba(11,25,44,0.88));
-      border: 1px solid rgba(126, 188, 255, 0.14);
-      border-radius: var(--radius-lg);
-      backdrop-filter: blur(12px);
-      box-shadow: 0 16px 48px rgba(3, 8, 20, 0.6);
-      text-align: center;
       position: relative;
       z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      padding: 32px 28px;
+      background: rgba(10, 8, 24, 0.82);
+      border: 1px solid rgba(124, 58, 237, 0.32);
+      border-radius: 28px;
+      backdrop-filter: blur(28px) saturate(1.5);
+      -webkit-backdrop-filter: blur(28px) saturate(1.5);
+      box-shadow:
+        0 0 0 1px rgba(236,72,153,0.08) inset,
+        0 0 60px rgba(124,58,237,0.2),
+        0 32px 80px rgba(0,0,0,0.7);
+      text-align: center;
+      animation: cardEntrance 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
     }
-    .login-card h1 {
-      margin: 0 0 8px;
-      font-size: 30px;
+
+    @keyframes cardEntrance {
+      from { transform: translateY(30px) scale(0.95); opacity: 0; }
+      to   { transform: translateY(0)    scale(1);    opacity: 1; }
+    }
+
+    /* shimmer border */
+    .login-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg,
+        rgba(124,58,237,0.6) 0%,
+        rgba(236,72,153,0.3) 40%,
+        rgba(6,182,212,0.2) 100%
+      );
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* ── Logo / brand ── */
+    .login-logo {
+      margin: 0 0 6px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.2rem;
       font-weight: 700;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #ffffff, #7ebcff);
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #fff 0%, #a78bfa 45%, #ec4899 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: logoPulse 3s ease-in-out infinite alternate;
     }
+
+    @keyframes logoPulse {
+      0%   { filter: drop-shadow(0 0 8px rgba(124,58,237,0.5)); }
+      100% { filter: drop-shadow(0 0 20px rgba(236,72,153,0.6)); }
+    }
+
     .login-lead {
-      margin: 0 0 18px;
+      margin: 0 0 22px;
       color: var(--muted);
-      font-size: 0.96rem;
-      line-height: 1.45;
+      font-size: 0.92rem;
+      line-height: 1.5;
     }
+
+    /* ── Role switcher ── */
     .role-switcher {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 18px;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+      margin-bottom: 20px;
     }
+
     .role-option {
-      border: 1px solid rgba(126, 188, 255, 0.18);
-      background: rgba(13, 31, 54, 0.72);
-      color: var(--text);
-      border-radius: 14px;
+      border: 1px solid rgba(124,58,237,0.2);
+      background: rgba(20, 16, 48, 0.6);
+      color: var(--text-2);
+      border-radius: 16px;
       padding: 14px 12px;
       cursor: pointer;
       text-align: left;
-      transition: all 0.18s ease;
+      transition:
+        transform 0.2s cubic-bezier(0.34,1.56,0.64,1),
+        border-color 0.2s,
+        box-shadow 0.2s,
+        background 0.2s;
+      font-family: 'Inter', sans-serif;
     }
+
     .role-option:hover {
-      transform: translateY(-1px);
-      border-color: rgba(126, 188, 255, 0.36);
-      box-shadow: 0 10px 24px rgba(2, 10, 22, 0.3);
+      transform: translateY(-2px);
+      border-color: rgba(124,58,237,0.4);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
     }
+
     .role-option.is-active {
-      background: linear-gradient(180deg, rgba(74, 163, 255, 0.26), rgba(13, 31, 54, 0.88));
-      border-color: rgba(126, 188, 255, 0.5);
+      background: linear-gradient(135deg, rgba(124,58,237,0.28), rgba(236,72,153,0.12));
+      border-color: rgba(124,58,237,0.55);
+      box-shadow: 0 0 0 1px rgba(124,58,237,0.2), 0 0 20px rgba(124,58,237,0.2);
+      color: var(--text);
     }
+
     .role-title {
-      font-size: 0.97rem;
+      font-size: 0.92rem;
       font-weight: 700;
       margin-bottom: 4px;
+      font-family: 'Space Grotesk', sans-serif;
     }
+
     .role-desc {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--muted);
-      line-height: 1.45;
+      line-height: 1.4;
     }
+
+    /* ── Step panels ── */
     .step-panel {
       text-align: left;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       padding: 16px;
-      border-radius: 16px;
-      background: rgba(9, 22, 39, 0.58);
-      border: 1px solid rgba(126, 188, 255, 0.12);
+      border-radius: 18px;
+      background: rgba(8, 6, 22, 0.65);
+      border: 1px solid rgba(124,58,237,0.15);
+      animation: panelFade 0.3s ease both;
     }
-    .step-panel[hidden] {
-      display: none;
+
+    @keyframes panelFade {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
+
+    .step-panel[hidden] { display: none; }
+
     .step-label {
       display: block;
-      font-size: 0.78rem;
-      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: #9cc9ff;
-      margin-bottom: 10px;
+      color: var(--violet-2);
+      margin-bottom: 12px;
+      font-weight: 700;
     }
+
     .hint {
-      margin: 8px 0 0;
+      margin: 6px 0 0;
       color: var(--muted);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       line-height: 1.45;
     }
-    .field-row {
-      display: grid;
-      gap: 10px;
-    }
-    .field-row + .field-row {
-      margin-top: 12px;
-    }
+
+    .field-row { display: grid; gap: 8px; }
+    .field-row + .field-row { margin-top: 14px; }
+
     .field-caption {
       display: flex;
       justify-content: space-between;
@@ -127,52 +226,70 @@
       align-items: baseline;
       margin-bottom: 6px;
       color: var(--muted);
-      font-size: 0.86rem;
+      font-size: 0.84rem;
     }
     .field-caption strong {
       color: var(--text);
-      font-weight: 650;
+      font-weight: 700;
     }
-    .credential-stack {
-      display: grid;
-      gap: 14px;
-    }
+
+    .credential-stack { display: grid; gap: 14px; }
+
     .login-form {
       display: flex;
       flex-direction: column;
       gap: 14px;
       text-align: left;
     }
-    .credential-choice {
-      display: none;
-    }
-    .credential-choice.is-active {
-      display: block;
-    }
+
+    .credential-choice { display: none; }
+    .credential-choice.is-active { display: block; }
+
     .divider {
-      margin: 18px 0;
+      margin: 16px 0;
       border: none;
-      border-top: 1px solid rgba(255,255,255,0.08);
+      border-top: 1px solid rgba(124,58,237,0.15);
     }
+
+    /* eye toggle button */
+    .pwd-toggle {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 16px;
+      padding: 4px;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .pwd-toggle:hover { color: var(--violet-2); }
+
+    .pwd-wrap { position: relative; width: 100%; }
+    .pwd-wrap .text-input { padding-right: 42px; }
   </style>
 </head>
 <body>
-  <main class="login-card">
-    <h1>Freetopify</h1>
-    <p class="login-lead">Choose a role, then enter only the details needed to continue.</p>
+  <main class="login-card" role="main">
+    <h1 class="login-logo">Freetopify</h1>
+    <p class="login-lead">Choose a role, then enter your credentials to continue.</p>
 
     <div class="role-switcher" role="tablist" aria-label="Login type selector">
       <button type="button" class="role-option is-active" data-mode="admin" aria-selected="true">
         <div class="role-title">Admin login</div>
-        <div class="role-desc">Use your admin account.</div>
+        <div class="role-desc">Full access with your account.</div>
       </button>
       <button type="button" class="role-option" data-mode="guest" aria-selected="false">
         <div class="role-title">Guest access</div>
-        <div class="role-desc">Use a name and guest PIN.</div>
+        <div class="role-desc">Read-only with a shared PIN.</div>
       </button>
     </div>
 
     <form id="login-form" class="login-form">
+      <!-- Admin panel -->
       <section class="step-panel credential-choice is-active" data-mode-panel="admin">
         <div class="field-row">
           <div class="field-caption">
@@ -187,15 +304,16 @@
             <strong>Password</strong>
             <span>Secret</span>
           </div>
-          <div style="position: relative; width: 100%;">
-            <input id="password" class="text-input" type="password" autocomplete="current-password" placeholder="Password" required style="width: 100%; padding-right: 40px;" />
-            <button type="button" id="toggle-pwd" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #b3cae3; font-size: 16px; padding: 4px;">👁️</button>
+          <div class="pwd-wrap">
+            <input id="password" class="text-input" type="password" autocomplete="current-password" placeholder="Password" required />
+            <button type="button" id="toggle-pwd" class="pwd-toggle" aria-label="Toggle password visibility">👁️</button>
           </div>
           <p class="hint">Enter your admin password.</p>
         </div>
-        <button type="submit" class="primary-btn" style="margin-top: 6px;">Log in</button>
+        <button type="submit" class="primary-btn" style="width:100%;margin-top:10px;">Continue as Admin</button>
       </section>
 
+      <!-- Guest panel -->
       <section class="step-panel credential-choice" data-mode-panel="guest" hidden>
         <div class="field-row">
           <div class="field-caption">
@@ -213,53 +331,45 @@
           <input id="guest-pin" class="text-input" type="password" autocomplete="one-time-code" placeholder="Guest PIN" required />
           <p class="hint">Enter the shared guest PIN.</p>
         </div>
-        <button type="submit" class="secondary-btn" style="margin-top: 6px;">Join</button>
+        <button type="submit" class="secondary-btn" style="width:100%;margin-top:10px;">Continue as Guest</button>
       </section>
     </form>
   </main>
-  <script type="module" src="/web/js/auth.js?v=20260524-1"></script>
+
+  <script type="module" src="/web/js/auth.js?v=20260524-8"></script>
   <script>
     const toggle = document.getElementById('toggle-pwd');
     const roleButtons = Array.from(document.querySelectorAll('.role-option'));
     const panels = Array.from(document.querySelectorAll('[data-mode-panel]'));
-    const loginButton = document.querySelector('#login-form button[type="submit"]');
     let activeMode = 'admin';
 
     function setMode(mode) {
       activeMode = mode;
-      roleButtons.forEach((button) => {
-        const isActive = button.dataset.mode === mode;
-        button.classList.toggle('is-active', isActive);
-        button.setAttribute('aria-selected', String(isActive));
+      roleButtons.forEach((btn) => {
+        const isActive = btn.dataset.mode === mode;
+        btn.classList.toggle('is-active', isActive);
+        btn.setAttribute('aria-selected', String(isActive));
       });
       panels.forEach((panel) => {
         const isActive = panel.dataset.modePanel === mode;
         panel.classList.toggle('is-active', isActive);
         panel.hidden = !isActive;
-        panel.querySelectorAll('input, textarea, select').forEach((field) => {
-          field.disabled = !isActive;
+        panel.querySelectorAll('input, textarea, select').forEach((f) => {
+          f.disabled = !isActive;
         });
       });
-      if (loginButton) {
-        loginButton.textContent = mode === 'admin' ? 'Continue as Admin' : 'Continue as Guest';
-      }
     }
 
-    roleButtons.forEach((button) => {
-      button.addEventListener('click', () => setMode(button.dataset.mode));
-    });
+    roleButtons.forEach((btn) => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
 
-    toggle.addEventListener('click', () => {
-      const pwd = document.getElementById('password');
-      if (!pwd) return;
-      if (pwd.type === 'password') {
-        pwd.type = 'text';
-        toggle.textContent = '🙈';
-      } else {
-        pwd.type = 'password';
-        toggle.textContent = '👁️';
-      }
-    });
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        const pwd = document.getElementById('password');
+        if (!pwd) return;
+        if (pwd.type === 'password') { pwd.type = 'text'; toggle.textContent = '🙈'; }
+        else { pwd.type = 'password'; toggle.textContent = '👁️'; }
+      });
+    }
 
     setMode(activeMode);
   </script>

@@ -1,7 +1,57 @@
 :root {
-  --bg: #0f141a;
-  --surface: #18222d;
-  --text: #e6edf3;
-  --muted: #9fb1c1;
-  --accent: #f59e0b;
+  /* ── Base Background Stack ── */
+  --bg0: #060811;
+  --bg1: #0d0f1e;
+  --bg2: #141629;
+  --bg3: #1c1f38;
+
+  /* ── Neon Palette ── */
+  --violet:    #7c3aed;
+  --violet-2:  #9d5ff5;
+  --pink:      #ec4899;
+  --pink-2:    #f472b6;
+  --cyan:      #06b6d4;
+  --cyan-2:    #22d3ee;
+  --amber:     #f59e0b;
+
+  /* ── Surface & Border ── */
+  --surface-0: rgba(12, 14, 28, 0.82);
+  --surface-1: rgba(20, 22, 42, 0.78);
+  --surface-2: rgba(28, 31, 56, 0.72);
+  --line:      rgba(124, 58, 237, 0.22);
+  --line-2:    rgba(236, 72, 153, 0.14);
+
+  /* ── Text ── */
+  --text:      #f0f0ff;
+  --text-2:    #c4c4e8;
+  --muted:     #7b7ba8;
+
+  /* ── Glow Shadows ── */
+  --glow-violet: 0 0 24px rgba(124, 58, 237, 0.5);
+  --glow-pink:   0 0 20px rgba(236, 72, 153, 0.45);
+  --glow-cyan:   0 0 20px rgba(6, 182, 212, 0.45);
+
+  /* ── Radius ── */
+  --radius-xl: 24px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+
+  /* ── Spacing ── */
+  --space-1:  8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+
+  /* ── Animation ── */
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth:  cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast:  150ms;
+  --dur-med:   250ms;
+  --dur-slow:  400ms;
+
+  /* ── Typography ── */
+  --font-head: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
 }
