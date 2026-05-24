@@ -204,8 +204,7 @@ body::before {
 
 /* Inner panels fill view with their own internal padding */
 .view > .panel {
-  flex: 1;
-  min-height: 0;
+  flex-shrink: 0;      /* don't shrink — let content determine height */
   padding: 18px 20px;
   border-radius: 0;
   border: none;
