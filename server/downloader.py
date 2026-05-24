@@ -114,16 +114,17 @@ class Downloader:
         if self.browser:
             cmd += ["--cookies-from-browser", self.browser]
 
-        # Tell yt-dlp which JavaScript runtime to use for signature solving.
-        # quickjs is a pure-Python package (already installed in venv) — no system install needed.
-        # Falls back to node/nodejs binary if quickjs isn't available.
-        try:
-            import quickjs  # noqa: F401 — just checking it's importable
-            cmd += ["--js-runtimes", "quickjs"]
-        except ImportError:
-            node_path = shutil.which("node") or shutil.which("nodejs")
-            if node_path:
-                cmd += ["--js-runtimes", f"node:{node_path}"]
+        # JS runtime for YouTube signature & n-challenge solving.
+        # node is preferred — most capable. quickjs is Python-only fallback.
+        node_path = shutil.which("node") or shutil.which("nodejs")
+        if node_path:
+            cmd += ["--js-runtimes", f"node:{node_path}"]
+        else:
+            try:
+                import quickjs  # noqa: F401
+                cmd += ["--js-runtimes", "quickjs"]
+            except ImportError:
+                pass  # no JS runtime — yt-dlp will warn but still attempt download
 
         cmd.append(job.url)
 
