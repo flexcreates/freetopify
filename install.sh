@@ -6,109 +6,176 @@ echo "        Freetopify Interactive Installer         "
 echo "================================================="
 echo ""
 
-OS_NAME="$(uname -s || echo unknown)"
 USER_HOME="${HOME:-/home/$(whoami)}"
 DEFAULT_MUSIC_PATH="$USER_HOME/Music/freetopify"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
+# ── Helper: pick first available apt package ──────────
 pick_pkg() {
   for pkg in "$@"; do
     if apt-cache show "$pkg" >/dev/null 2>&1; then
-      echo "$pkg"
-      return 0
+      echo "$pkg"; return 0
     fi
   done
   return 1
 }
 
-echo "[1/3] Checking System Dependencies..."
+# ── Helper: detect installed browser ─────────────────
+detect_browser() {
+  for b in firefox google-chrome chromium-browser chromium; do
+    if command -v "$b" >/dev/null 2>&1; then
+      case "$b" in
+        firefox) echo "firefox"; return ;;
+        google-chrome) echo "chrome"; return ;;
+        chromium*) echo "chromium"; return ;;
+      esac
+    fi
+  done
+  echo ""  # none detected
+}
+
+# ─────────────────────────────────────────────────────
+echo "[1/3] Installing System Dependencies..."
 if command -v apt >/dev/null 2>&1; then
   py_minor="$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
   venv_pkg="$(pick_pkg "python${py_minor}-venv" "python3-venv" || true)"
   pip_pkg="$(pick_pkg "python3-pip" || true)"
-  install_pkgs=(sqlite3 ffmpeg curl bluez bluez-tools)
-  
-  # Note: yt-dlp installed via pip later is usually better, but we can install the apt one as a fallback
-  
-  if [ -n "${venv_pkg:-}" ]; then install_pkgs+=("$venv_pkg"); fi
-  if [ -n "${pip_pkg:-}" ]; then install_pkgs+=("$pip_pkg"); fi
 
-  if sudo -n true 2>/dev/null; then
-    sudo apt update
-    sudo apt install -y "${install_pkgs[@]}"
-  else
-    echo "⚠️  Sudo permission is required to install system dependencies (ffmpeg, sqlite3, python-venv)."
-    sudo apt update
-    sudo apt install -y "${install_pkgs[@]}"
-  fi
+  install_pkgs=(
+    sqlite3
+    ffmpeg
+    curl
+    # nodejs: required by yt-dlp to solve YouTube JS signatures.
+    # Without it, some YouTube downloads fail with "Signature solving failed".
+    # It is a lightweight runtime and installs cleanly on all Debian/Ubuntu systems.
+    nodejs
+  )
+
+  if [ -n "${venv_pkg:-}" ]; then install_pkgs+=("$venv_pkg"); fi
+  if [ -n "${pip_pkg:-}" ];  then install_pkgs+=("$pip_pkg");  fi
+
+  sudo apt-get update -qq
+  sudo apt-get install -y "${install_pkgs[@]}"
   echo "✅ System dependencies installed."
 else
-  echo "⚠️  Non-APT system detected. Please manually ensure python3-venv, ffmpeg, and sqlite3 are installed."
+  echo "⚠️  Non-APT system detected. Please manually install: python3-venv, ffmpeg, sqlite3, nodejs"
 fi
 
+# ─────────────────────────────────────────────────────
 echo ""
-echo "[2/3] Configuring Library..."
-read -p "Enter the full path where you want to create your Music Library [$DEFAULT_MUSIC_PATH]: " USER_MUSIC_PATH
+echo "[2/3] Configuring Your Setup..."
+
+# Music library path
+read -rp "📁 Music library path [$DEFAULT_MUSIC_PATH]: " USER_MUSIC_PATH
 MUSIC_LIBRARY_PATH="${USER_MUSIC_PATH:-$DEFAULT_MUSIC_PATH}"
-
 mkdir -p "$MUSIC_LIBRARY_PATH"
-echo "✅ Music library ready at: $MUSIC_LIBRARY_PATH"
+echo "✅ Music library: $MUSIC_LIBRARY_PATH"
 
+# Admin credentials
+read -rp "👤 Admin username [admin]: " ADMIN_USERNAME
+ADMIN_USERNAME="${ADMIN_USERNAME:-admin}"
+
+read -rsp "🔑 Admin password [freetopify]: " ADMIN_PASSWORD
+echo ""
+ADMIN_PASSWORD="${ADMIN_PASSWORD:-freetopify}"
+
+# Auto-detect browser for YouTube cookie bypass
+DETECTED_BROWSER="$(detect_browser)"
+if [ -n "$DETECTED_BROWSER" ]; then
+  echo "🌐 Detected browser: $DETECTED_BROWSER (will be used for YouTube cookie bypass)"
+  YTDLP_BROWSER="$DETECTED_BROWSER"
+else
+  echo "⚠️  No browser detected — YTDLP_BROWSER left blank (set manually in .env if needed)"
+  YTDLP_BROWSER=""
+fi
+
+# yt-dlp path — always use the venv binary for consistency
+YTDLP_PATH="./venv/bin/yt-dlp"
+
+# Generate a secure secret key
+SECRET_KEY="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
+
+# Write .env (create or update)
 if [ -f .env ]; then
-  if grep -q '^MUSIC_LIBRARY_PATH=' .env; then
-    sed -i "s#^MUSIC_LIBRARY_PATH=.*#MUSIC_LIBRARY_PATH=$MUSIC_LIBRARY_PATH#" .env
-  else
-    printf '\nMUSIC_LIBRARY_PATH=%s\n' "$MUSIC_LIBRARY_PATH" >> .env
-  fi
+  echo ""
+  echo "ℹ️  Existing .env found — updating MUSIC_LIBRARY_PATH and YTDLP_PATH only."
+  sed -i "s#^MUSIC_LIBRARY_PATH=.*#MUSIC_LIBRARY_PATH=$MUSIC_LIBRARY_PATH#" .env
+  grep -q '^YTDLP_PATH=' .env \
+    && sed -i "s#^YTDLP_PATH=.*#YTDLP_PATH=$YTDLP_PATH#" .env \
+    || echo "YTDLP_PATH=$YTDLP_PATH" >> .env
+  grep -q '^YTDLP_BROWSER=' .env \
+    && sed -i "s#^YTDLP_BROWSER=.*#YTDLP_BROWSER=$YTDLP_BROWSER#" .env \
+    || echo "YTDLP_BROWSER=$YTDLP_BROWSER" >> .env
 else
   cat > .env <<EOF
-MUSIC_LIBRARY_PATH=$MUSIC_LIBRARY_PATH
-SERVER_PORT=7171
+# ── Server ────────────────────────────────────
 SERVER_HOST=0.0.0.0
-SECRET_KEY=$(head -c 32 /dev/urandom | base64)
-TOKEN_EXPIRE_HOURS=720
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=freetopify
+SERVER_PORT=7171
+
+# ── Auth & Security ───────────────────────────
+SECRET_KEY=$SECRET_KEY
+ADMIN_USERNAME=$ADMIN_USERNAME
+ADMIN_PASSWORD=$ADMIN_PASSWORD
+TOKEN_EXPIRE_HOURS=168
+SECURE_COOKIES=false
+
+# ── Paths ─────────────────────────────────────
+MUSIC_LIBRARY_PATH=$MUSIC_LIBRARY_PATH
 DATABASE_PATH=./data/freetopify.db
-YTDLP_PATH=yt-dlp
+YTDLP_PATH=$YTDLP_PATH
 VENV_PATH=./venv
+
+# ── Downloader ────────────────────────────────
 DEFAULT_DOWNLOAD_FORMAT=mp3
 DEFAULT_DOWNLOAD_BITRATE=320k
+YTDLP_BROWSER=$YTDLP_BROWSER
+
+# ── Logging ───────────────────────────────────
 LOG_LEVEL=INFO
 LOG_FILE=./logs/freetopify.log
+
+# ── Network / Discovery ───────────────────────
 MDNS_HOSTNAME=freetopify
 ENABLE_MDNS=false
 TAILSCALE_IP=
+
+# ── Guest Access ──────────────────────────────
+GUEST_PIN=
+GUEST_TOKEN_EXPIRE_HOURS=1
+
+# ── Party Mode / DJ Hub ───────────────────────
+MAX_CONNECTIONS=0
+PARTY_BUFFER_MS=500
 EOF
-  echo "✅ Auto-generated .env configuration."
+  echo "✅ .env created with auto-generated secret key."
 fi
 
+# ─────────────────────────────────────────────────────
 echo ""
-echo "[3/3] Setting up Python Virtual Environment..."
+echo "[3/3] Setting up Python Environment..."
 if [ ! -d venv ]; then
   python3 -m venv venv
 fi
 
-if [ -x venv/bin/pip ]; then
-  source venv/bin/activate
-  pip install --upgrade pip
-  # yt-dlp is best installed via pip to ensure the latest version for YouTube extraction fixes
-  pip install yt-dlp
-  pip install -r requirements.txt
-  echo "✅ Python dependencies installed."
-else
-  echo "❌ Error: Virtual environment was not created properly."
-  exit 1
-fi
+source venv/bin/activate
+pip install --upgrade pip --quiet
+pip install -r requirements.txt --quiet
+echo "✅ Python dependencies installed."
 
 echo ""
 echo "================================================="
-echo "        🎉 Freetopify is ready to run! 🎉        "
+echo "   🎉 Freetopify is installed and ready! 🎉      "
 echo "================================================="
-echo "To start the server manually, run:"
-echo "  source venv/bin/activate"
-echo "  ./scripts/run_server.sh"
 echo ""
-echo "To install it as a background service so it auto-starts on boot:"
-echo "  sudo cp freetopify.service /etc/systemd/system/"
-echo "  sudo systemctl enable --now freetopify"
+echo "  Start the server:   ./scripts/run_server.sh"
+echo "  Open in browser:    http://localhost:7171"
+echo "  Admin login:        $ADMIN_USERNAME / [your password]"
+if [ -n "$YTDLP_BROWSER" ]; then
+echo "  YouTube cookies:    $YTDLP_BROWSER (auto-configured ✅)"
+fi
+echo ""
+echo "  To auto-start on boot:"
+echo "    sudo cp freetopify.service /etc/systemd/system/"
+echo "    sudo systemctl enable --now freetopify"
 echo "================================================="
