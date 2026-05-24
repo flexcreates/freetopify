@@ -66,6 +66,9 @@ export async function openMetaEditor(path) {
   form.style.display = 'grid';
   form.style.gap = '12px';
 
+  let hasChanges = false;
+  form.addEventListener('input', () => { hasChanges = true; });
+
   const tags = data.tags || {};
   const titleField = createInput('Title', 'title', tags.TIT2 || tags.title || '');
   const artistField = createInput('Artist', 'artist', tags.TPE1 || tags.artist || '');
@@ -89,6 +92,7 @@ export async function openMetaEditor(path) {
     const parts = path.split('/');
     const fname = parts[parts.length - 1] || path;
     titleField.input.value = fname.replace(/\.(mp3|flac|ogg|m4a|aac|opus|wav|wv)$/i, '').trim();
+    hasChanges = true;
   });
   const btnInferArtist = document.createElement('button');
   btnInferArtist.type = 'button';
@@ -96,7 +100,10 @@ export async function openMetaEditor(path) {
   btnInferArtist.textContent = 'Infer Artist from Path';
   btnInferArtist.addEventListener('click', () => {
     const parts = path.split('/').filter(Boolean);
-    if (parts.length >= 2) artistField.input.value = parts[parts.length - 2];
+    if (parts.length >= 2) {
+      artistField.input.value = parts[parts.length - 2];
+      hasChanges = true;
+    }
   });
   quickWrap.appendChild(btnFilename);
   quickWrap.appendChild(btnInferArtist);
@@ -154,6 +161,7 @@ export async function openMetaEditor(path) {
 
   fileInput.addEventListener('change', () => {
     fileNameDisplay.textContent = fileInput.files[0] ? fileInput.files[0].name : 'No file selected';
+    hasChanges = true;
   });
 
   fileLabel.appendChild(fileInput);
@@ -232,7 +240,10 @@ export async function openMetaEditor(path) {
   cancel.type = 'button';
   cancel.className = 'secondary-btn';
   cancel.textContent = 'Cancel';
-  cancel.addEventListener('click', () => document.body.removeChild(modal));
+  cancel.addEventListener('click', () => {
+    if (hasChanges && !confirm('You have unsaved changes. Discard them?')) return;
+    document.body.removeChild(modal);
+  });
 
   const save = document.createElement('button');
   save.type = 'submit';
@@ -305,6 +316,13 @@ export async function openMetaEditor(path) {
   panel.appendChild(form);
   modal.appendChild(panel);
   document.body.appendChild(modal);
+
+  modal.addEventListener('mousedown', (e) => {
+    if (e.target === modal) {
+      if (hasChanges && !confirm('You have unsaved changes. Discard them?')) return;
+      document.body.removeChild(modal);
+    }
+  });
 
   // load cover art via thumbnail endpoint (if available)
   (async () => {
