@@ -4,7 +4,7 @@
 > A self-hosted, folder-first music player with a sleek dark-neon web client —  
 > built for people who actually own their music.
 
-![Freetopify — Now Playing](docs/assets/image.png)
+![Freetopify — Now Playing](assets/image.png)
 
 ---
 
@@ -47,6 +47,10 @@ Open **`http://<your-machine-ip>:7171`** in any browser on your network.
 
 > The installer handles everything: system packages (ffmpeg, nodejs, sqlite3),  
 > Python venv, yt-dlp, browser cookie auto-detection, and secret key generation.
+
+### Live Setup Guide
+Watch how easy it is to get Freetopify running on your machine:
+<video src="assets/live-guide.mp4" controls="controls" muted="muted" width="100%"></video>
 
 ---
 
