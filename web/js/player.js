@@ -19,7 +19,12 @@ function ensurePlayer() {
   audio.volume = Number.isFinite(saved) ? Math.max(0, Math.min(1, saved)) : 0.8;
   audio.addEventListener('ended', () => {
     console.log('[PLAYER] audio "ended" event fired.');
-    next();
+    if (repeatMode) {
+      console.log('[PLAYER] Repeat One is ON. Replaying current track.');
+      playCurrent();
+    } else {
+      next();
+    }
   });
   audio.addEventListener('timeupdate', notify);
   audio.addEventListener('play', notify);
@@ -159,6 +164,12 @@ export function togglePlay() {
 export function next() {
   if (queue.length === 0) return;
 
+  if (repeatMode) {
+    playCurrent();
+    notify();
+    return;
+  }
+
   const current = queue[queueIndex];
 
   if (shuffleMode) {
@@ -182,18 +193,8 @@ export function next() {
         queueIndex += 1;
         playCurrent();
       } else {
-        if (repeatMode) {
-          queueIndex = 0;
-          playCurrent();
-        } else {
-          // Stop playback at end of playlist
-          const a = ensurePlayer();
-          a.pause();
-          a.currentTime = 0;
-          queueIndex = 0;
-          a.removeAttribute('data-playing-path');
-          a.src = '';
-        }
+        queueIndex = 0;
+        playCurrent();
       }
     }
   }
@@ -210,6 +211,12 @@ export function prev() {
   }
 
   if (queue.length === 0) return;
+
+  if (repeatMode) {
+    playCurrent();
+    notify();
+    return;
+  }
 
   if (shuffleMode) {
     let prevIdx = Math.floor(Math.random() * queue.length);
