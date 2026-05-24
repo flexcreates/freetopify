@@ -2,7 +2,7 @@
 
 Self-hosted, folder-first music server with a Gen Z neon glassmorphism web client.
 
-![Freetopify — Now Playing view](docs/assets/preview.png)
+![Freetopify — Now Playing view](docs/assets/image.png)
 
 ## Docs Map
 - PRD index: `docs/prd.md`
