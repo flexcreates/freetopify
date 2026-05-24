@@ -49,6 +49,7 @@ Open **`http://<your-machine-ip>:7171`** in any browser on your network.
 
 ### Live Setup Guide
 Watch how easy it is to get Freetopify running on your machine:
+
 https://github.com/flexcreates/freetopify/raw/main/assets/live-guide.mp4
 
 ---
@@ -57,8 +58,8 @@ https://github.com/flexcreates/freetopify/raw/main/assets/live-guide.mp4
 
 | Role | How |
 |---|---|
-| **Admin** | Username + password set in `.env` during install |
-| **Guest** | Display name + shared `GUEST_PIN` from `.env` |
+| **Admin** | Username + password set during install |
+| **Guest** | Display name + shared `GUEST_PIN` set during install |
 
 ---
 
