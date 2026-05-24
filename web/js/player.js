@@ -78,11 +78,17 @@ export function jumpToQueueIndex(idx) {
 
 export function addToQueue(item) {
   const queuedItem = { ...item, isQueued: true };
-  queue.push(queuedItem);
-
-  if (queue.length === 1) {
+  if (queue.length === 0) {
+    queue.push(queuedItem);
     queueIndex = 0;
     playCurrent();
+  } else {
+    // Find the end of the manually queued block
+    let insertIdx = queueIndex + 1;
+    while (insertIdx < queue.length && queue[insertIdx].isQueued) {
+      insertIdx++;
+    }
+    queue.splice(insertIdx, 0, queuedItem);
   }
   notify();
 }
