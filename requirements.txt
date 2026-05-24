@@ -9,6 +9,7 @@ watchdog
 zeroconf
 python-multipart
 yt-dlp
+quickjs
 psutil
 pytest
 httpx
