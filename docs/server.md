@@ -148,10 +148,28 @@ python3 -c "import server.<module_name>"
 - Guest access can be enabled with `GUEST_PIN`; keep guest scope read-only on the web client
 - Protect path traversal with safe path check
 - Stream endpoint support Range (`206`, `Accept-Ranges`, `Content-Range`)
-- Watcher debounce 500ms
-- WebSocket event `library_update`
+- Watcher debounce **2500ms** (raised from 500ms to survive yt-dlp part-file storms)
+- Watcher ignores temp suffixes: `.part .ytdl .tmp .webp .jpg .png .webm .m4a`
+- `on_fs_event` is guarded by `asyncio.Lock` — concurrent scans on the same SQLite DB are skipped
+- WebSocket event `library_update` only fires after a real audio file changes
 - SSE for download progress
 - DB schema match PRD exactly
+- `Cache-Control: no-cache` set on all `/web/*.js|html|css` responses via ASGI middleware
+
+## Download System
+- `POST /api/v1/download/start` — start a download job; accepts optional `output_dir`
+- `GET /api/v1/download/progress/{job_id}` — SSE stream of yt-dlp log lines
+- `GET /api/v1/download/jobs` — list of recent jobs (polled only while active jobs exist)
+- `DELETE /api/v1/download/jobs/{job_id}` — cancel running job
+- `GET /api/v1/download/history` — read permanent local history log (newest-first, max 200)
+- Download history written to `logs/download_history.log` (JSONL, git-ignored)
+  - Only final audio files logged (extension matches job format); deduped by stem
+  - Format: `{"ts": "YYYY-MM-DD HH:MM:SS", "title": "...", "folder": "...", "format": "mp3", "url": "..."}`
+
+## Library API
+- `GET /api/v1/library/browse?path=` — folder tree; items include `absolute_path`
+- `POST /api/v1/library/mkdir` — create a new sub-folder (path-traversal safe)
+- `GET /api/v1/library/cover?path=` — folder cover art (first embedded thumbnail found)
 
 ## Quick Verify
 ```bash

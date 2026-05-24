@@ -401,6 +401,24 @@ export function renderDownloads(mount) {
   // ── Init ───────────────────────────────────────────────
   loadFolders();
   loadHistory();
-  const timer = setInterval(refreshJobs, 3000);
-  window.addEventListener('hashchange', () => clearInterval(timer), { once: true });
+
+  // Poll jobs only while something is active; self-cancel when idle
+  let timer = null;
+  async function pollJobs() {
+    await refreshJobs();
+    try {
+      const { items } = await apiGet('/api/v1/download/jobs');
+      const hasActive = items?.some(j => j.status === 'queued' || j.status === 'running');
+      if (!hasActive && timer) { clearInterval(timer); timer = null; }
+    } catch { /* ignore */ }
+  }
+  function startPolling() {
+    if (!timer) timer = setInterval(pollJobs, 3000);
+  }
+
+  // Kick off polling when a download starts
+  const origSubmit = mount.querySelector('#dl-submit');
+  if (origSubmit) origSubmit.addEventListener('click', startPolling, { capture: true });
+
+  window.addEventListener('hashchange', () => { if (timer) clearInterval(timer); }, { once: true });
 }

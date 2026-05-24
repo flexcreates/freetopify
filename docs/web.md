@@ -30,14 +30,14 @@ web/
 ├── login.html          # Login page (glassmorphism card, animated mesh bg)
 ├── css/
 │   ├── reset.css       # Google Fonts import + box-sizing reset
-│   ├── variables.css   # 57 design tokens (colors, spacing, radius, animation)
+│   ├── variables.css   # Design tokens (colors, spacing, radius, animation)
 │   └── app.css         # All component styles + 5-tier responsive breakpoints
 ├── js/
 │   ├── api.js          # Fetch helpers and API wrappers
 │   ├── auth.js         # Login/logout, token storage, role handling
-│   ├── player.js       # Audio element, queue, playback state
+│   ├── player.js       # Audio element, queue, playback state (singleton)
 │   ├── library.js      # Folder/track rendering, context menu
-│   ├── downloader.js   # YouTube download form + SSE progress
+│   ├── downloader.js   # Visual folder-picker, multi-select, parallel job dispatch, SSE logs, history
 │   ├── websocket.js    # /ws/live connection and live updates
 │   └── app.js          # View routing, render functions, keyboard shortcuts
 └── icons/
@@ -72,7 +72,8 @@ web/
 - Login screen: role first (Admin / Guest), then only the required fields
 - No CDN, no internet dependency (except Google Fonts preconnect in HTML)
 - All assets served from the Freetopify server itself
-- Cache-bust via `?v=YYYYMMDD-N` query param on CSS/JS imports
+- **No manual cache-busting needed** — server sends `Cache-Control: no-cache` on all `/web/*.js|html|css`
+- All JS module imports must use bare (no `?v=`) paths so the browser treats them as a single module instance
 
 ## Login Flows
 - **Admin**: `POST /auth/login` with username + password → JWT cookie
@@ -82,11 +83,14 @@ web/
 ## API Use
 - Login: `POST /auth/login`
 - Guest: `POST /auth/guest`
-- Browse: `GET /api/v1/library/browse?path=`
+- Browse: `GET /api/v1/library/browse?path=` (items include `absolute_path`)
+- Create folder: `POST /api/v1/library/mkdir`
 - Stream: `GET /stream/{file_path}`
-- Downloads: `POST /api/v1/download/start`
-- Live updates: `GET /ws/live?token=...` (WebSocket)
+- Start download: `POST /api/v1/download/start` (body: `url, type, genre, format, output_dir?`)
+- Job list: `GET /api/v1/download/jobs` (polled only while active jobs exist)
 - Download progress: `GET /api/v1/download/progress/{job_id}` (SSE)
+- Download history: `GET /api/v1/download/history` (permanent local JSONL log)
+- Live updates: `GET /ws/live?token=...` (WebSocket)
 
 ## UX Must
 - Folder-first browsing (real disk tree)
@@ -101,9 +105,12 @@ web/
 ## Test Quick
 - Open web → login works (admin + guest)
 - Browse folder → works with no reload
-- Click track → plays, now-bar updates
-- File added to library → auto-refresh view via WebSocket
-- Download panel → shows live SSE log lines
+- Click track → plays, now-bar updates, vinyl spins, Now Playing view syncs
+- Controls (play/pause/next/prev/shuffle/repeat) all respond correctly
+- File added to library → auto-refresh via WebSocket (only after full audio file write, not during .part download)
+- Downloads panel → visual folder grid, multi-select, New Folder modal, parallel jobs
+- Each job → live SSE log card, badge updates, history row appears on completion
+- History persists across page refresh (reads from `logs/download_history.log`)
 - Resize to 390px → sidebar collapses to horizontal pills
 - Context menu → appears clamped within viewport with glass styling
 

@@ -62,15 +62,22 @@ async def lifespan(app: FastAPI):
 
     app.state.downloader = Downloader(settings.ytdlp_path, settings.music_library_path)
 
+    _scan_lock = asyncio.Lock()
+
     async def on_fs_event(event) -> None:
-        logging.info("Filesystem event: %s", getattr(event, "src_path", "unknown"))
-        await scan_library(settings.music_library_path, str(settings.database_path), app.state.scan_tracker)
-        await app.state.ws_manager.broadcast(
-            {
-                "event": "library_update",
-                "data": {"path": getattr(event, "src_path", ""), "action": getattr(event, "event_type", "changed")},
-            }
-        )
+        # Guard: skip if a scan is already running (don't stack scans)
+        if _scan_lock.locked():
+            logging.debug("Scan already in progress, skipping event: %s", getattr(event, "src_path", "?"))
+            return
+        async with _scan_lock:
+            logging.info("Filesystem event: %s", getattr(event, "src_path", "unknown"))
+            await scan_library(settings.music_library_path, str(settings.database_path), app.state.scan_tracker)
+            await app.state.ws_manager.broadcast(
+                {
+                    "event": "library_update",
+                    "data": {"path": getattr(event, "src_path", ""), "action": getattr(event, "event_type", "changed")},
+                }
+            )
 
     loop = asyncio.get_running_loop()
     app.state.watcher = LibraryWatcher(settings.music_library_path, loop, on_fs_event)
