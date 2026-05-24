@@ -30,12 +30,14 @@ class DebouncedHandler(FileSystemEventHandler):
         self,
         loop: asyncio.AbstractEventLoop,
         callback,
-        debounce_seconds: float = 2.5,  # raised from 0.5 — prevents per-chunk scan during download
+        debounce_seconds: float = 2.5,
+        tasks_set: set = None,
     ) -> None:
         self.loop = loop
         self.callback = callback
         self.debounce_seconds = debounce_seconds
         self._last = 0.0
+        self.tasks_set = tasks_set if tasks_set is not None else set()
 
     def on_any_event(self, event):
         # Ignore directory events and known temp/non-audio suffixes
@@ -50,7 +52,17 @@ class DebouncedHandler(FileSystemEventHandler):
             return
         self._last = now
         log.debug("Library watcher: scheduling scan after event on %s", src)
-        self.loop.call_soon_threadsafe(asyncio.create_task, self.callback(event))
+        
+        def schedule_task():
+            try:
+                task = asyncio.create_task(self.callback(event))
+                self.tasks_set.add(task)
+                task.add_done_callback(self.tasks_set.discard)
+            except RuntimeError:
+                pass # loop might be closed
+                
+        if not self.loop.is_closed():
+            self.loop.call_soon_threadsafe(schedule_task)
 
 
 class LibraryWatcher:
@@ -59,12 +71,16 @@ class LibraryWatcher:
         self.loop = loop
         self.callback = callback
         self.observer = Observer()
+        self.tasks = set()
 
     def start(self) -> None:
-        handler = DebouncedHandler(self.loop, self.callback, 2.5)
+        handler = DebouncedHandler(self.loop, self.callback, 2.5, self.tasks)
         self.observer.schedule(handler, str(self.root), recursive=True)
         self.observer.start()
 
     def stop(self) -> None:
         self.observer.stop()
         self.observer.join(timeout=3)
+        for task in list(self.tasks):
+            if not task.done():
+                task.cancel()
