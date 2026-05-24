@@ -46,6 +46,7 @@ if command -v apt >/dev/null 2>&1; then
     sqlite3
     ffmpeg
     curl
+    openssl
     # nodejs: required by yt-dlp to solve YouTube JS signatures.
     # Without it, some YouTube downloads fail with "Signature solving failed".
     # It is a lightweight runtime and installs cleanly on all Debian/Ubuntu systems.
@@ -59,12 +60,24 @@ if command -v apt >/dev/null 2>&1; then
   sudo apt-get install -y "${install_pkgs[@]}"
   echo "✅ System dependencies installed."
 else
-  echo "⚠️  Non-APT system detected. Please manually install: python3-venv, ffmpeg, sqlite3, nodejs"
+  echo "⚠️  Non-APT system detected. Please manually install: python3-venv, ffmpeg, sqlite3, nodejs, openssl"
 fi
 
 # ─────────────────────────────────────────────────────
 echo ""
-echo "[2/3] Configuring Your Setup..."
+echo "[2/4] Generating SSL Certificates..."
+mkdir -p certs
+if [ ! -f certs/cert.pem ] || [ ! -f certs/key.pem ]; then
+  echo "Generating new self-signed SSL certificate for local HTTPS..."
+  openssl req -x509 -newkey rsa:4096 -nodes -out certs/cert.pem -keyout certs/key.pem -days 3650 -subj "/CN=freetopify.local" 2>/dev/null
+  echo "✅ SSL certificates generated in certs/"
+else
+  echo "✅ Existing SSL certificates found."
+fi
+
+# ─────────────────────────────────────────────────────
+echo ""
+echo "[3/4] Configuring Your Setup..."
 
 # Music library path
 read -rp "📁 Music library path [$DEFAULT_MUSIC_PATH]: " USER_MUSIC_PATH
@@ -99,26 +112,37 @@ SECRET_KEY="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
 # Write .env (create or update)
 if [ -f .env ]; then
   echo ""
-  echo "ℹ️  Existing .env found — updating MUSIC_LIBRARY_PATH and YTDLP_PATH only."
+  echo "ℹ️  Existing .env found — updating paths, browser, and enabling SSL."
   sed -i "s#^MUSIC_LIBRARY_PATH=.*#MUSIC_LIBRARY_PATH=$MUSIC_LIBRARY_PATH#" .env
+  
   grep -q '^YTDLP_PATH=' .env \
     && sed -i "s#^YTDLP_PATH=.*#YTDLP_PATH=$YTDLP_PATH#" .env \
     || echo "YTDLP_PATH=$YTDLP_PATH" >> .env
+    
   grep -q '^YTDLP_BROWSER=' .env \
     && sed -i "s#^YTDLP_BROWSER=.*#YTDLP_BROWSER=$YTDLP_BROWSER#" .env \
     || echo "YTDLP_BROWSER=$YTDLP_BROWSER" >> .env
+    
+  grep -q '^ENABLE_SSL=' .env \
+    && sed -i "s#^ENABLE_SSL=.*#ENABLE_SSL=true#" .env \
+    || echo "ENABLE_SSL=true" >> .env
+    
+  grep -q '^SECURE_COOKIES=' .env \
+    && sed -i "s#^SECURE_COOKIES=.*#SECURE_COOKIES=true#" .env \
+    || echo "SECURE_COOKIES=true" >> .env
 else
   cat > .env <<EOF
 # ── Server ────────────────────────────────────
 SERVER_HOST=0.0.0.0
 SERVER_PORT=7171
+ENABLE_SSL=true
 
 # ── Auth & Security ───────────────────────────
 SECRET_KEY=$SECRET_KEY
 ADMIN_USERNAME=$ADMIN_USERNAME
 ADMIN_PASSWORD=$ADMIN_PASSWORD
 TOKEN_EXPIRE_HOURS=168
-SECURE_COOKIES=false
+SECURE_COOKIES=true
 
 # ── Paths ─────────────────────────────────────
 MUSIC_LIBRARY_PATH=$MUSIC_LIBRARY_PATH
@@ -153,7 +177,7 @@ fi
 
 # ─────────────────────────────────────────────────────
 echo ""
-echo "[3/3] Setting up Python Environment..."
+echo "[4/4] Setting up Python Environment..."
 if [ ! -d venv ]; then
   python3 -m venv venv
 fi
@@ -169,7 +193,7 @@ echo "   🎉 Freetopify is installed and ready! 🎉      "
 echo "================================================="
 echo ""
 echo "  Start the server:   ./scripts/run_server.sh"
-echo "  Open in browser:    http://localhost:7171"
+echo "  Open in browser:    https://localhost:7171"
 echo "  Admin login:        $ADMIN_USERNAME / [your password]"
 if [ -n "$YTDLP_BROWSER" ]; then
 echo "  YouTube cookies:    $YTDLP_BROWSER (auto-configured ✅)"

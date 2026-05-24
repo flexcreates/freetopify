@@ -92,7 +92,8 @@ async def lifespan(app: FastAPI):
         app.state.mdns = MDNSAdvertiser(settings.mdns_hostname, settings.server_port)
         try:
             await app.state.mdns.start()
-            logging.info(f"🌐 Local network access: http://{settings.mdns_hostname}.local:{settings.server_port}")
+            protocol = "https" if settings.enable_ssl else "http"
+            logging.info(f"🌐 Local network access: {protocol}://{settings.mdns_hostname}.local:{settings.server_port}")
         except Exception:
             logging.exception("mDNS startup failed")
 

@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 data/
 logs/
+certs/
 android/build/
 android/.dart_tool/
 android/.gradle/

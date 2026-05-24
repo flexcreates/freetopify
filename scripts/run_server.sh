@@ -32,4 +32,15 @@ if [ -f .env ]; then
   set +a
 fi
 
-exec /home/flex/Projects/freetopify/venv/bin/uvicorn server.main:app --host 0.0.0.0 --port 7171
+# Base Uvicorn command
+UVICORN_CMD="/home/flex/Projects/freetopify/venv/bin/uvicorn server.main:app --host 0.0.0.0 --port 7171"
+
+# Check if SSL is enabled and certs exist
+if [ "${ENABLE_SSL:-false}" = "true" ] && [ -f certs/key.pem ] && [ -f certs/cert.pem ]; then
+  echo "🔒 Starting Freetopify with HTTPS enabled"
+  UVICORN_CMD="$UVICORN_CMD --ssl-keyfile certs/key.pem --ssl-certfile certs/cert.pem"
+else
+  echo "⚠️ Starting Freetopify with HTTP (SSL not enabled or certs missing)"
+fi
+
+exec $UVICORN_CMD
