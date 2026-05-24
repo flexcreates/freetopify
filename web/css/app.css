@@ -863,10 +863,10 @@ input[type="range"] { accent-color: var(--violet-2); }
   position: relative;
   z-index: 1;
   flex: 1;
-  display: grid;
-  grid-template-columns: clamp(200px, 32%, 300px) 1fr;
-  gap: 28px;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  gap: 40px;
   padding: 28px 24px;
 }
 
@@ -985,8 +985,8 @@ input[type="range"] { accent-color: var(--violet-2); }
    ============================================================ */
 .about-shell {
   display: grid;
+  grid-template-rows: auto 1fr;
   gap: 16px;
-  align-content: start;
   height: 100%;
 }
 
@@ -1001,6 +1001,8 @@ input[type="range"] { accent-color: var(--violet-2); }
   display: grid;
   grid-template-columns: repeat(3, minmax(0,1fr));
   gap: 14px;
+  min-height: 160px;
+  align-items: stretch;
 }
 
 .about-card {
@@ -1121,6 +1123,15 @@ input[type="range"] { accent-color: var(--violet-2); }
   font-weight: 600;
 }
 
+/* Tag label inside mini feature cards — slightly bigger */
+.about-mini-card .about-stat-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  margin-top: 8px;
+  margin-bottom: 0;
+  color: rgba(167,139,250,0.8);
+}
+
 .about-stat-value {
   font-family: var(--font-head);
   font-size: clamp(0.9rem, 1vw, 1rem);
@@ -1236,10 +1247,15 @@ input[type="range"] { accent-color: var(--violet-2); }
   background: var(--surface-1);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  padding: 16px 18px;
-  min-height: 130px;
+  padding: 22px 22px 24px;
+  min-height: 160px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.35);
   transition: transform var(--dur-med) var(--ease-spring), border-color var(--dur-med), box-shadow var(--dur-med);
+  /* Fill height and distribute content */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0;
 }
 
 .about-mini-card::before {
@@ -1259,21 +1275,22 @@ input[type="range"] { accent-color: var(--violet-2); }
 .about-mini-title {
   position: relative;
   z-index: 1;
-  margin-top: 8px;
+  margin-top: 10px;
   font-family: var(--font-head);
-  font-size: 0.98rem;
+  font-size: 1.15rem;
   font-weight: 700;
   line-height: 1.3;
   color: var(--text);
+  letter-spacing: -0.2px;
 }
 
 .about-mini-copy {
   position: relative;
   z-index: 1;
-  margin-top: 8px;
+  margin-top: 10px;
   color: var(--muted);
-  font-size: 0.85rem;
-  line-height: 1.5;
+  font-size: 0.92rem;
+  line-height: 1.6;
 }
 
 /* ============================================================
@@ -1321,11 +1338,10 @@ input[type="range"] { accent-color: var(--violet-2); }
    ABOUT — Extra polish
    ============================================================ */
 .about-mini-icon {
-  font-size: 1.8rem;
-  margin-bottom: 6px;
+  font-size: 2.2rem;
   display: block;
   line-height: 1;
-  filter: drop-shadow(0 0 8px rgba(124,58,237,0.5));
+  filter: drop-shadow(0 0 10px rgba(124,58,237,0.6));
 }
 
 .donate-heading {
@@ -1354,7 +1370,7 @@ input[type="range"] { accent-color: var(--violet-2); }
   .app-shell { grid-template-columns: 190px minmax(0,1fr); gap: 10px; padding: 10px; }
   .now-bar { grid-template-columns: minmax(150px,1fr) minmax(0,360px) minmax(120px,1fr); }
   .about-hero { grid-template-columns: 1fr; }
-  .player-stage { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 20px; }
+  .player-stage { flex-direction: column; text-align: center; padding: 20px; }
   .player-meta { text-align: left; }
   .vinyl-disk { width: 220px; height: 220px; }
 }
@@ -1415,10 +1431,8 @@ input[type="range"] { accent-color: var(--violet-2); }
 
   /* Player */
   .player-stage {
-    grid-template-columns: 1fr;
-    justify-items: center;
+    flex-direction: column;
     text-align: center;
-    min-height: auto;
     padding: 20px 16px;
   }
   .player-meta { text-align: left; }
