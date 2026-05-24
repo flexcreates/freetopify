@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from '/web/js/api.js?v=20260524-12';
+import { apiGet, apiPost } from '/web/js/api.js?v=20260524-13';
 
 // ── Helpers ────────────────────────────────────────────────
 function esc(v) {
@@ -68,6 +68,17 @@ export function renderDownloads(mount) {
         </div>
         <div id="dl-jobs-list" class="dl-jobs-list">
           <p class="dl-empty-msg">No recent downloads</p>
+        </div>
+      </div>
+
+      <!-- ── Permanent history ── -->
+      <div class="dl-section" id="dl-history-section">
+        <div class="dl-section-head">
+          <span class="dl-section-label">📜 Download History</span>
+          <span class="dl-section-hint">Saved locally on device · never deleted</span>
+        </div>
+        <div id="dl-history-list" class="dl-history-list">
+          <p class="dl-empty-msg">No history yet</p>
         </div>
       </div>
 
@@ -200,7 +211,7 @@ export function renderDownloads(mount) {
       const trackLabel = f.track_count ? `${f.track_count} track${f.track_count !== 1 ? 's' : ''}` : 'empty';
       return `
         <button class="dl-folder-card${isSelected ? ' selected' : ''}" data-path="${esc(f.path)}" data-abs="${esc(f.absolute_path || '')}">
-          <span class="dl-folder-icon">🗂</span>
+          <span class="dl-folder-icon">◈</span>
           <span class="dl-folder-card-name">${esc(f.name)}</span>
           <span class="dl-folder-card-meta">${esc(trackLabel)}</span>
           ${isSelected ? '<span class="dl-folder-check">✓</span>' : ''}
@@ -358,8 +369,33 @@ export function renderDownloads(mount) {
     } catch { /* ignore */ }
   }
 
+  // ── Download history ───────────────────────────────────
+  async function loadHistory() {
+    const list = mount.querySelector('#dl-history-list');
+    if (!list) return;
+    try {
+      const { items } = await apiGet('/api/v1/download/history');
+      if (!items?.length) {
+        list.innerHTML = '<p class="dl-empty-msg">No history yet — downloads will appear here permanently</p>';
+        return;
+      }
+      list.innerHTML = items.map(entry => `
+        <div class="dl-history-row">
+          <span class="dl-history-icon">♫</span>
+          <span class="dl-history-title">${esc(entry.title)}</span>
+          <span class="dl-history-folder">📂 ${esc(entry.folder)}</span>
+          <span class="dl-history-format dl-fmt-pill">${esc(entry.format?.toUpperCase() || '')}</span>
+          <span class="dl-history-ts">${esc(entry.ts)}</span>
+        </div>
+      `).join('');
+    } catch {
+      list.innerHTML = '<p class="dl-empty-msg">Could not load history</p>';
+    }
+  }
+
   // ── Init ───────────────────────────────────────────────
   loadFolders();
+  loadHistory();
   const timer = setInterval(refreshJobs, 3000);
   window.addEventListener('hashchange', () => clearInterval(timer), { once: true });
 }

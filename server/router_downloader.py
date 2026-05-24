@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
 from server.auth import get_current_user, get_current_user_from_request
+from server.downloader import read_history
 from server.models import DownloadStartRequest
 
 router = APIRouter(prefix="/api/v1/download", tags=["download"])
@@ -88,3 +89,9 @@ async def progress(job_id: str, request: Request, token: str | None = None):
             await asyncio.sleep(0.5)
 
     return StreamingResponse(stream(), media_type="text/event-stream")
+
+
+@router.get("/history")
+async def download_history(_user: str = Depends(get_current_user)) -> dict:
+    """Return the permanent on-device download history log (newest first)."""
+    return {"items": read_history(limit=200)}

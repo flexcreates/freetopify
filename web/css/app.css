@@ -1524,7 +1524,7 @@ input[type="range"] { accent-color: var(--violet-2); }
 }
 .dl-folder-card.selected::before { opacity: 1; }
 
-.dl-folder-icon { font-size: 1.5rem; line-height: 1; }
+.dl-folder-icon { font-size: 1.4rem; line-height: 1; color: var(--violet); font-weight: 400; }
 .dl-folder-card-name {
   font-family: var(--font-head);
   font-size: 0.88rem;
@@ -1572,6 +1572,63 @@ input[type="range"] { accent-color: var(--violet-2); }
   line-height: 1;
 }
 .dl-new-folder-card .dl-folder-card-name { color: var(--violet); font-size: 0.82rem; }
+
+/* ── Download history ── */
+.dl-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.dl-history-row {
+  display: grid;
+  grid-template-columns: 20px 1fr auto auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius-md);
+  transition: background var(--dur-fast);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.dl-history-row:last-child { border-bottom: none; }
+.dl-history-row:hover { background: rgba(255,255,255,0.04); }
+
+.dl-history-icon {
+  color: var(--violet);
+  font-size: 0.85rem;
+  text-align: center;
+}
+.dl-history-title {
+  font-size: 0.84rem;
+  color: var(--text);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dl-history-folder {
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.dl-history-format {
+  font-size: 0.65rem;
+  font-weight: 800;
+  font-family: var(--font-head);
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  background: rgba(124,58,237,0.18);
+  color: var(--violet);
+  border-radius: 999px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.dl-history-ts {
+  font-size: 0.72rem;
+  color: rgba(148,163,184,0.45);
+  white-space: nowrap;
+  font-family: var(--font-mono, monospace);
+}
 
 /* ── Job cards ── */
 .dl-jobs-list {

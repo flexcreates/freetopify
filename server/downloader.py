@@ -1,12 +1,51 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import re
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 
 from server.models import DownloadJob
+
+_HISTORY_FILE = Path("logs/download_history.log")
+
+
+def _ensure_history_dir() -> None:
+    _HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+
+def _append_history(entries: list[dict]) -> None:
+    """Append completed track entries to the permanent download history log."""
+    if not entries:
+        return
+    _ensure_history_dir()
+    with _HISTORY_FILE.open("a", encoding="utf-8") as f:
+        for entry in entries:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
+def read_history(limit: int = 200) -> list[dict]:
+    """Read the last `limit` entries from the history log, newest first."""
+    if not _HISTORY_FILE.exists():
+        return []
+    try:
+        lines = _HISTORY_FILE.read_text(encoding="utf-8").splitlines()
+        entries = []
+        for line in reversed(lines):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entries.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+            if len(entries) >= limit:
+                break
+        return entries
+    except Exception:
+        return []
 
 
 class Downloader:
@@ -90,6 +129,32 @@ class Downloader:
 
             if code == 0:
                 job.status = "done"
+                # Parse downloaded track titles from yt-dlp "Destination:" lines
+                completed_at = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
+                history_entries = []
+                for log_line in job.log_lines:
+                    if "Destination:" in log_line:
+                        # e.g. "[download] Destination: /path/to/Song Title.mp3"
+                        dest = log_line.split("Destination:", 1)[-1].strip()
+                        track_name = Path(dest).stem
+                        history_entries.append({
+                            "ts": completed_at,
+                            "title": track_name,
+                            "folder": job.genre,
+                            "format": job.format,
+                            "url": job.url,
+                        })
+                if history_entries:
+                    _append_history(history_entries)
+                elif job.tracks_downloaded == 0:
+                    # fallback: log the URL with no title parsed
+                    _append_history([{
+                        "ts": completed_at,
+                        "title": job.url,
+                        "folder": job.genre,
+                        "format": job.format,
+                        "url": job.url,
+                    }])
             else:
                 job.status = "failed"
                 job.error = f"yt-dlp exited with {code}"
