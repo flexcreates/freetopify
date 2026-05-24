@@ -137,7 +137,7 @@ LOG_FILE=./logs/freetopify.log
 
 # ── Network / Discovery ───────────────────────
 MDNS_HOSTNAME=freetopify
-ENABLE_MDNS=false
+ENABLE_MDNS=true
 TAILSCALE_IP=
 
 # ── Guest Access ──────────────────────────────
