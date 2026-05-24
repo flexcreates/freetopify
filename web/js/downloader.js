@@ -331,7 +331,12 @@ export function renderDownloads(mount) {
           badge.textContent = d.status;
           badge.className = `dl-job-badge ${d.status}`;
         }
-        if (d.status === 'done' || d.status === 'failed') { es.close(); refreshJobs(); }
+        if (d.status === 'done' || d.status === 'failed') {
+            es.close();
+            refreshJobs();
+            // Reload history so the completed download appears immediately
+            if (d.status === 'done') loadHistory();
+          }
       } catch { log.textContent += evt.data + '\n'; }
     };
     es.onerror = () => { es.close(); refreshJobs(); };

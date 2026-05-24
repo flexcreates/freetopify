@@ -129,25 +129,39 @@ class Downloader:
 
             if code == 0:
                 job.status = "done"
-                # Parse downloaded track titles from yt-dlp "Destination:" lines
+                # Parse final audio file from yt-dlp output.
+                # yt-dlp emits TWO "Destination:" lines per track when using
+                # --extract-audio: one for the raw download (e.g. .webm) and
+                # one for the extracted audio (e.g. .mp3 / .flac).
+                # We only want the final audio file, so we filter by the job's
+                # format extension. Deduplicate by stem as an extra safety net.
                 completed_at = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
+                seen_stems: set[str] = set()
                 history_entries = []
+                target_ext = f".{job.format.lower()}"
                 for log_line in job.log_lines:
-                    if "Destination:" in log_line:
-                        # e.g. "[download] Destination: /path/to/Song Title.mp3"
-                        dest = log_line.split("Destination:", 1)[-1].strip()
-                        track_name = Path(dest).stem
-                        history_entries.append({
-                            "ts": completed_at,
-                            "title": track_name,
-                            "folder": job.genre,
-                            "format": job.format,
-                            "url": job.url,
-                        })
+                    if "Destination:" not in log_line:
+                        continue
+                    dest = log_line.split("Destination:", 1)[-1].strip()
+                    dest_path = Path(dest)
+                    # Only log the final converted audio file
+                    if dest_path.suffix.lower() != target_ext:
+                        continue
+                    stem = dest_path.stem
+                    if stem in seen_stems:
+                        continue
+                    seen_stems.add(stem)
+                    history_entries.append({
+                        "ts": completed_at,
+                        "title": stem,
+                        "folder": job.genre,
+                        "format": job.format,
+                        "url": job.url,
+                    })
                 if history_entries:
                     _append_history(history_entries)
                 elif job.tracks_downloaded == 0:
-                    # fallback: log the URL with no title parsed
+                    # fallback: log the URL when no Destination line was found
                     _append_history([{
                         "ts": completed_at,
                         "title": job.url,
