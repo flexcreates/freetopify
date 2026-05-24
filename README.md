@@ -50,7 +50,7 @@ Open **`http://<your-machine-ip>:7171`** in any browser on your network.
 
 ### Live Setup Guide
 Watch how easy it is to get Freetopify running on your machine:
-<video src="assets/live-guide.mp4" controls="controls" muted="muted" width="100%"></video>
+https://github.com/flexcreates/freetopify/raw/main/assets/live-guide.mp4
 
 ---
 
