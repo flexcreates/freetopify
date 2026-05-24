@@ -77,13 +77,6 @@ export function jumpToQueueIndex(idx) {
 }
 
 export function addToQueue(item) {
-  // Remove existing track to prevent duplicates
-  const existingIdx = queue.findIndex(t => t.path === item.path);
-  if (existingIdx !== -1) {
-    queue.splice(existingIdx, 1);
-    if (existingIdx < queueIndex) queueIndex--;
-  }
-
   const queuedItem = { ...item, isQueued: true };
   queue.push(queuedItem);
 
@@ -95,15 +88,6 @@ export function addToQueue(item) {
 }
 
 export function playNext(item) {
-  // Remove existing track to prevent duplicates
-  const existingIdx = queue.findIndex(t => t.path === item.path);
-  if (existingIdx !== -1) {
-    queue.splice(existingIdx, 1);
-    if (existingIdx <= queueIndex) {
-      queueIndex--; // Shift current playing index back if we removed something before or at it
-    }
-  }
-
   const queuedItem = { ...item, isQueued: true };
   if (queue.length === 0) {
     queue.push(queuedItem);
@@ -171,29 +155,34 @@ export function togglePlay() {
 }
 
 export function next() {
-  console.log(`[PLAYER] next() called. queueIndex: ${queueIndex}, queue.length: ${queue.length}`);
-  
   if (queue.length === 0) return;
 
+  const current = queue[queueIndex];
+
   if (shuffleMode) {
+    if (current && current.isQueued) {
+      queue.splice(queueIndex, 1);
+    }
     let nextIdx = Math.floor(Math.random() * queue.length);
-    // Prevent immediate replay of the exact same track if possible
     if (queue.length > 1 && nextIdx === queueIndex) {
       nextIdx = (nextIdx + 1) % queue.length;
     }
     queueIndex = nextIdx;
-    console.log(`[PLAYER] Shuffle ON: Randomly picked track index ${queueIndex}`);
     playCurrent();
   } else {
-    if (queueIndex + 1 < queue.length) {
-      queueIndex += 1;
-      console.log(`[PLAYER] Moving to next track in queue. New queueIndex: ${queueIndex}`);
+    if (current && current.isQueued) {
+      // Consume the queued track
+      queue.splice(queueIndex, 1);
+      if (queueIndex >= queue.length) queueIndex = 0;
       playCurrent();
     } else {
-      // Permanent playlist loop!
-      queueIndex = 0;
-      console.log(`[PLAYER] End of queue reached. Permanent loop ON. Wrapping to queueIndex: 0`);
-      playCurrent();
+      if (queueIndex + 1 < queue.length) {
+        queueIndex += 1;
+        playCurrent();
+      } else {
+        queueIndex = 0;
+        playCurrent();
+      }
     }
   }
   notify();

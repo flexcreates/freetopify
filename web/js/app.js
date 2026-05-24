@@ -116,7 +116,7 @@ function updateNowBar() {
         <div class="queue-item-title" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; ${t.isQueued ? 'color: var(--muted);' : ''}">
           ${i === state.queueIndex ? '▶ ' : `${i + 1}. `}${t.isQueued ? '★ ' : ''}${escapeHtml(t.title || t.name || 'Track')}
         </div>
-        <button class="queue-remove-btn" data-remove-idx="${i}" style="background: none; border: none; color: var(--muted); cursor: pointer; padding: 0 4px; font-size: 1.1rem; line-height: 1;">×</button>
+        ${t.isQueued ? `<button class="queue-remove-btn" data-remove-idx="${i}" style="background: none; border: none; color: var(--muted); cursor: pointer; padding: 0 4px; font-size: 1.1rem; line-height: 1;">×</button>` : ''}
       </div>
     `).join('');
   }
