@@ -77,7 +77,16 @@ export function jumpToQueueIndex(idx) {
 }
 
 export function addToQueue(item) {
-  queue.push(item);
+  // Remove existing track to prevent duplicates
+  const existingIdx = queue.findIndex(t => t.path === item.path);
+  if (existingIdx !== -1) {
+    queue.splice(existingIdx, 1);
+    if (existingIdx < queueIndex) queueIndex--;
+  }
+
+  const queuedItem = { ...item, isQueued: true };
+  queue.push(queuedItem);
+
   if (queue.length === 1) {
     queueIndex = 0;
     playCurrent();
@@ -86,12 +95,22 @@ export function addToQueue(item) {
 }
 
 export function playNext(item) {
+  // Remove existing track to prevent duplicates
+  const existingIdx = queue.findIndex(t => t.path === item.path);
+  if (existingIdx !== -1) {
+    queue.splice(existingIdx, 1);
+    if (existingIdx <= queueIndex) {
+      queueIndex--; // Shift current playing index back if we removed something before or at it
+    }
+  }
+
+  const queuedItem = { ...item, isQueued: true };
   if (queue.length === 0) {
-    queue.push(item);
+    queue.push(queuedItem);
     queueIndex = 0;
     playCurrent();
   } else {
-    queue.splice(queueIndex + 1, 0, item);
+    queue.splice(queueIndex + 1, 0, queuedItem);
   }
   notify();
 }
