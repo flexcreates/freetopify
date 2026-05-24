@@ -1,8 +1,8 @@
-import { apiGet, clearToken, getToken } from '/web/js/api.js';
-import { logout } from '/web/js/auth.js';
-import { renderDownloads } from '/web/js/downloader.js';
-import { getCurrentLibraryPath, renderLibrary, goBackOne, hasHistory, showTrackContextMenu } from '/web/js/library.js';
-import { bindKeyboardShortcuts, getPlayerState, next, onPlayerStateChange, prev, seekToPercent, setVolume, togglePlay, toggleRepeat, toggleShuffle, jumpToQueueIndex } from '/web/js/player.js';
+import { apiGet, clearToken, getToken } from '/web/js/api.js?v=20260524-12';
+import { logout } from '/web/js/auth.js?v=20260524-12';
+import { renderDownloads } from '/web/js/downloader.js?v=20260524-12';
+import { getCurrentLibraryPath, renderLibrary, goBackOne, hasHistory, showTrackContextMenu } from '/web/js/library.js?v=20260524-12';
+import { bindKeyboardShortcuts, getPlayerState, next, onPlayerStateChange, prev, seekToPercent, setVolume, togglePlay, toggleRepeat, toggleShuffle, jumpToQueueIndex } from '/web/js/player.js?v=20260524-12';
 import { connectLiveUpdates } from '/web/js/websocket.js?v=20260524-12';
 
 const app = document.getElementById('app');
