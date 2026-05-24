@@ -60,7 +60,11 @@ async def lifespan(app: FastAPI):
 
     await scan_library(settings.music_library_path, str(settings.database_path), app.state.scan_tracker)
 
-    app.state.downloader = Downloader(settings.ytdlp_path, settings.music_library_path)
+    app.state.downloader = Downloader(
+        settings.ytdlp_path,
+        settings.music_library_path,
+        browser=settings.ytdlp_browser,
+    )
 
     _scan_lock = asyncio.Lock()
 

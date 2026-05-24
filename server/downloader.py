@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import re
+import shutil
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -49,10 +50,11 @@ def read_history(limit: int = 200) -> list[dict]:
 
 
 class Downloader:
-    def __init__(self, ytdlp_path: str, library_root: Path, max_jobs: int = 5) -> None:
+    def __init__(self, ytdlp_path: str, library_root: Path, max_jobs: int = 5, browser: str = "") -> None:
         self.ytdlp_path = ytdlp_path
         self.library_root = library_root
         self.max_jobs = max_jobs
+        self.browser = browser  # e.g. "chrome" or "firefox" for --cookies-from-browser
         self.jobs: dict[str, DownloadJob] = {}
         self.processes: dict[str, asyncio.subprocess.Process] = {}
 
@@ -99,10 +101,25 @@ class Downloader:
             "--embed-metadata",
             "--embed-thumbnail",
             "--newline",
+            # Retry & rate-limit: back off on 429, retry up to 10 times
+            "--retries", "10",
+            "--retry-sleep", "5",
+            "--sleep-interval", "2",
+            "--max-sleep-interval", "5",
             "-o",
             output_tpl,
-            job.url,
         ]
+
+        # Use browser cookies to appear as a logged-in user — bypasses most 429s
+        if self.browser:
+            cmd += ["--cookies-from-browser", self.browser]
+
+        # Tell yt-dlp to use Node.js if available (required for some YouTube formats)
+        node_path = shutil.which("node") or shutil.which("nodejs")
+        if node_path:
+            cmd += ["--js-runtimes", f"nodejs:{node_path}"]
+
+        cmd.append(job.url)
 
         try:
             job.status = "running"
