@@ -51,16 +51,20 @@ export async function openMetaEditor(path) {
 
   const title = document.createElement('div');
   title.className = 'section-title';
+  title.style.marginBottom = '6px';
   title.textContent = 'Edit Metadata';
 
   const pathEl = document.createElement('div');
   pathEl.style.fontSize = '0.85rem';
   pathEl.style.color = 'var(--muted)';
+  pathEl.style.marginBottom = '20px';
+  pathEl.style.lineHeight = '1.4';
+  pathEl.style.wordBreak = 'break-word';
   pathEl.textContent = path;
 
   const form = document.createElement('form');
   form.style.display = 'grid';
-  form.style.gap = '8px';
+  form.style.gap = '12px';
 
   const tags = data.tags || {};
   const titleField = createInput('Title', 'title', tags.TIT2 || tags.title || '');
