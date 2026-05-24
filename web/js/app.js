@@ -8,6 +8,8 @@ import { connectLiveUpdates } from '/web/js/websocket.js?v=20260524-1';
 const app = document.getElementById('app');
 const queueList = document.getElementById('queue-list');
 const globalBackBtn = document.getElementById('btn-global-back');
+const projectStart = new Date('2026-05-22T19:13:29+05:30');
+let aboutTimer = null;
 
 function escapeHtml(value) {
   return String(value)
@@ -165,6 +167,143 @@ function setActiveLink(route) {
   });
 }
 
+function formatElapsed(start, end = new Date()) {
+  let current = new Date(end.getTime());
+  let years = current.getUTCFullYear() - start.getUTCFullYear();
+  let months = current.getUTCMonth() - start.getUTCMonth();
+  let days = current.getUTCDate() - start.getUTCDate();
+  let hours = current.getUTCHours() - start.getUTCHours();
+  let minutes = current.getUTCMinutes() - start.getUTCMinutes();
+  let seconds = current.getUTCSeconds() - start.getUTCSeconds();
+
+  if (seconds < 0) { seconds += 60; minutes -= 1; }
+  if (minutes < 0) { minutes += 60; hours -= 1; }
+  if (hours < 0) { hours += 24; days -= 1; }
+  if (days < 0) {
+    const prevMonth = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), 0));
+    days += prevMonth.getUTCDate();
+    months -= 1;
+  }
+  if (months < 0) { months += 12; years -= 1; }
+
+  return { years, months, days, hours, minutes, seconds };
+}
+
+function formatElapsedLabel(diff) {
+  return `${diff.years}y ${diff.months}m ${diff.days}d ${String(diff.hours).padStart(2, '0')}h ${String(diff.minutes).padStart(2, '0')}m ${String(diff.seconds).padStart(2, '0')}s`;
+}
+
+function renderAboutView() {
+  const socialLinks = [
+    {
+      href: 'https://github.com/flexcreates',
+      label: 'GitHub',
+      title: 'GitHub profile',
+      icon: 'github',
+      svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.82.5 12.37c0 5.24 3.44 9.69 8.2 11.27.6.11.82-.27.82-.58 0-.29-.01-1.06-.02-2.08-3.34.75-4.04-1.66-4.04-1.66-.55-1.44-1.35-1.83-1.35-1.83-1.1-.78.08-.77.08-.77 1.22.09 1.86 1.28 1.86 1.28 1.08 1.9 2.84 1.35 3.53 1.03.11-.8.42-1.35.76-1.66-2.66-.31-5.46-1.37-5.46-6.1 0-1.35.47-2.45 1.24-3.32-.12-.31-.54-1.55.12-3.24 0 0 1.01-.33 3.3 1.27a11.1 11.1 0 0 1 6.01 0c2.29-1.6 3.3-1.27 3.3-1.27.66 1.69.24 2.93.12 3.24.77.87 1.24 1.97 1.24 3.32 0 4.74-2.81 5.78-5.48 6.09.43.37.82 1.1.82 2.22 0 1.61-.02 2.9-.02 3.29 0 .31.21.69.83.57A12.01 12.01 0 0 0 23.5 12.37C23.5 5.82 18.35.5 12 .5z"/></svg>`,
+    },
+    {
+      href: 'https://instagram.com/flexcreates',
+      label: 'Instagram',
+      title: 'Instagram profile',
+      icon: 'instagram',
+      svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 2.5A5.5 5.5 0 1 1 6.5 12 5.51 5.51 0 0 1 12 6.5Zm0 2A3.5 3.5 0 1 0 15.5 12 3.5 3.5 0 0 0 12 8.5Zm5.75-3.65a1.2 1.2 0 1 1-1.2 1.2 1.2 1.2 0 0 1 1.2-1.2Z"/></svg>`,
+    },
+  ];
+
+  const startLabel = projectStart.toLocaleString(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'medium',
+  });
+
+  app.innerHTML = `
+    <section class="about-shell">
+      <div class="about-hero">
+        <article class="about-card">
+          <div class="about-title">
+            <div>
+              <div class="about-kicker">Developer profile</div>
+              <h2>About Freetopify</h2>
+              <div class="about-subtitle">Private, folder-first music hosting with a clean browser client, local-network access, and a focused admin workflow.</div>
+            </div>
+            <div class="about-badge" aria-hidden="true">Official</div>
+          </div>
+
+          <div class="about-links-block">
+            <div class="about-stat-label">Official links</div>
+            <div class="social-row">
+              ${socialLinks.map((link) => `
+                <a class="social-link" href="${link.href}" target="_blank" rel="noreferrer" title="${link.title}">
+                  <span class="social-icon ${link.icon}">${link.svg}</span>
+                  <span>${link.label}</span>
+                </a>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="about-grid">
+            <div class="about-stat">
+              <div class="about-stat-label">Developer</div>
+              <div class="about-stat-value">Aditya Singh</div>
+              <div class="about-stat-small">Handle: flexcreates</div>
+            </div>
+            <div class="about-stat">
+              <div class="about-stat-label">Project start</div>
+              <div class="about-stat-value">${escapeHtml(startLabel)}</div>
+              <div class="about-stat-small">Live since the first build.</div>
+            </div>
+            <div class="about-stat countdown">
+              <div class="about-stat-label">Live elapsed</div>
+              <div class="about-stat-value" id="project-elapsed">Loading...</div>
+              <div class="about-stat-small">Year · month · day · hour · minute · second</div>
+            </div>
+          </div>
+        </article>
+
+        <aside class="about-card donate-card">
+          <div class="about-title">
+            <div>
+              <div class="about-kicker">Support</div>
+              <h2>Donate / Buy a Coffee</h2>
+              <div class="about-subtitle">Placeholder area for support links. Add your preferred payment or coffee link here when ready.</div>
+            </div>
+          </div>
+          <a class="donate-cta" href="#" onclick="return false;">Add donation link</a>
+          <div class="donate-placeholder">This is a placeholder button for a future donation or coffee link. Replace it with your preferred URL when you want to publish it.</div>
+        </aside>
+      </div>
+
+      <section class="about-strip">
+        <article class="about-mini-card">
+          <div class="about-stat-label">Built for local networks</div>
+          <div class="about-mini-title">Fast access on a home server or LAN</div>
+          <div class="about-mini-copy">Freetopify is designed to feel immediate on a browser inside your own network, with no CDN dependency and no visual clutter.</div>
+        </article>
+        <article class="about-mini-card">
+          <div class="about-stat-label">Guest friendly</div>
+          <div class="about-mini-title">PIN-gated access for sharing</div>
+          <div class="about-mini-copy">Guest mode keeps the surface simple while still allowing safe read-only listening when you want to share the library.
+          </div>
+        </article>
+        <article class="about-mini-card">
+          <div class="about-stat-label">Responsive by design</div>
+          <div class="about-mini-title">Desktop, tablet, and phone layouts</div>
+          <div class="about-mini-copy">The interface now adapts its placement, spacing, and card sizing so it stays balanced on laptops, desktops, iPhone, Android, and tablets.</div>
+        </article>
+      </section>
+    </section>
+  `;
+
+  const elapsedEl = document.getElementById('project-elapsed');
+  const updateElapsed = () => {
+    if (!elapsedEl) return;
+    elapsedEl.textContent = formatElapsedLabel(formatElapsed(projectStart, new Date()));
+  };
+  updateElapsed();
+  if (aboutTimer) clearInterval(aboutTimer);
+  aboutTimer = setInterval(updateElapsed, 1000);
+}
+
 function renderPlayerView() {
   const s = getPlayerState();
   app.innerHTML = `
@@ -242,10 +381,16 @@ async function renderRoute() {
   const route = (window.location.hash || '#library').replace('#', '');
   setActiveLink(route);
 
+  if (route !== 'about' && aboutTimer) {
+    clearInterval(aboutTimer);
+    aboutTimer = null;
+  }
+
   if (route === 'library') await renderLibrary(app, getCurrentLibraryPath());
   else if (route === 'downloads') renderDownloads(app);
   else if (route === 'player') renderPlayerView();
   else if (route === 'settings') renderSettings();
+  else if (route === 'about') renderAboutView();
   else window.location.hash = '#library';
 }
 

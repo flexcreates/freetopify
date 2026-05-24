@@ -92,3 +92,18 @@ End of initial snapshot.
 - Web: added a small cache-busting version to the login and app module imports so browsers load the updated auth/websocket modules.
 - Server: websocket live connections now fall back to the auth cookie when a query token is not provided, which keeps guest/admin live updates working in normal browsers.
 
+---
+
+2026-05-24 — Add restart-safe server launcher
+
+- Startup: added `scripts/run_server.sh` to stop any existing Freetopify `uvicorn` process on port `7171` before starting a fresh one.
+- Packaging: updated `README.md`, `install.sh`, `docs/server.md`, and `freetopify.service` to use the launcher.
+
+---
+
+2026-05-24 — Add About / Developer credits page
+
+- UI: added an About route in the web app with developer credits, official GitHub/Instagram links, project start date, and a live elapsed timer.
+- UI: included a donation / buy-a-coffee placeholder card matching the existing theme.
+- Docs: updated `README.md` and `docs/web.md` to mention the About page.
+

@@ -17,13 +17,14 @@ Self-hosted, folder-first music server.
 - Admin users sign in with the server account from `.env`
 - Optional guest access can be enabled with `GUEST_PIN` in `.env`
 - The login screen keeps the prompt minimal: choose a role, then enter only the required fields
+- The web app also includes an About page with developer credits and social links
 
 ## Quick Start
 ```bash
 ./install.sh
 source venv/bin/activate
 pytest -q server/tests/test_api.py
-uvicorn server.main:app --host 0.0.0.0 --port 7171
+./scripts/run_server.sh
 ```
 
 ## Config Notes

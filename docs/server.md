@@ -155,9 +155,13 @@ python3 -c "import server.<module_name>"
 
 ## Quick Verify
 ```bash
-uvicorn server.main:app --host 0.0.0.0 --port 7171
+./scripts/run_server.sh
 curl http://127.0.0.1:7171/api/v1/system/health
 ```
+
+## Start / Restart
+- Use `./scripts/run_server.sh` to stop any existing Freetopify `uvicorn` process for port `7171` and start a fresh one.
+- Systemd service `freetopify.service` uses the same launcher.
 
 ## Test List (Must Pass)
 - health 200

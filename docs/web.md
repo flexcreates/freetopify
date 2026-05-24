@@ -51,6 +51,7 @@ web/
 - Download progress from SSE `/api/v1/download/progress/{job_id}`
 - No CDN, no internet dependency
 - Use only local assets and bundled CSS/JS
+- Include an About route for developer credits, social links, and a donation placeholder
 
 ## Login
 - Admin login uses the server account

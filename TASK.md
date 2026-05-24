@@ -14,7 +14,7 @@
 - [ ] Phase 7: Final Report
 
 ## Current Task
-Web UI fully implemented and polished. Next phase is developing the Flutter Android application (Phase 5).
+Web UI fully implemented and polished. The server is started via `./scripts/run_server.sh` so repeat launches replace the old Uvicorn process. Next phase is developing the Flutter Android application (Phase 5).
 
 ## Completed Tasks
 - Built full server module set in required order
@@ -55,3 +55,4 @@ Web UI fully implemented and polished. Next phase is developing the Flutter Andr
 - Static compile: PASS
 - Runtime tests (`server/tests/test_api.py`): PASS (3 passed)
 - Web UI scaffold files created under `web/` (html/css/js structure)
+- Restart-safe launcher added at `scripts/run_server.sh` and wired into startup instructions
