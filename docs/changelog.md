@@ -3,6 +3,84 @@ This file records notable changes made to the Freetopify project as work progres
 
 ---
 
+## 2026-05-25 — Downloader Overhaul, Player Stability, Resource Optimisation & YouTube Fix
+
+### YouTube Downloader — Full Fix (`server/downloader.py`)
+- **Fixed YouTube JS signature solving** — the root cause of all download failures
+  - Added `--remote-components ejs:github`: downloads yt-dlp's official EJS challenge solver (cached after first use)
+  - Added `--js-runtimes node:<path>`: uses system Node.js for signature + n-challenge solving
+  - Added `quickjs` Python package as fallback when Node.js is not available
+  - Priority: `node` binary → `quickjs` → graceful degradation
+- **Fixed HTTP 429 rate-limit errors**
+  - Added `--cookies-from-browser <browser>`: passes logged-in YouTube session cookies
+  - Added `--retries 10 --retry-sleep 5`: auto-retry on 429 instead of failing immediately
+  - Added `--sleep-interval 2 --max-sleep-interval 5`: spaces out playlist track requests
+- **Fixed duplicate download history entries**
+  - yt-dlp emits two `Destination:` lines per track (raw `.webm` + extracted `.mp3`)
+  - Now filters by job's target format extension only; deduplicates by stem as safety net
+- **Fixed live history refresh** — `loadHistory()` now called automatically when a job completes (no page refresh needed)
+- **Fixed live folder track count refresh** — `loadFolders()` called on job completion so counts update instantly
+- Fixed `YTDLP_PATH` to point to `./venv/bin/yt-dlp` (venv binary, always correct version)
+
+### Smart Folder-Picker Downloads (`web/js/downloader.js`)
+- **Visual folder grid**: replaced text input with glassmorphism folder cards showing name + track count
+- **Multi-select**: click multiple folders to download the same track to all simultaneously
+- **New Folder modal**: create sub-directories on the fly without leaving the UI
+- **Per-job SSE log cards**: collapsible real-time yt-dlp output per job, individual status badges
+- **Adaptive polling**: jobs endpoint polled only while active jobs exist; self-cancels when all done
+- **Download history section**: permanent local log shown below recent jobs (persists across restarts)
+- **Scrollable panel**: fixed panel height clamp that cut off history list
+
+### Permanent Download History (`server/router_downloader.py`, `server/downloader.py`)
+- Download history written to `logs/download_history.log` (JSONL, git-ignored, never deleted)
+- Entry format: `{"ts": "YYYY-MM-DD HH:MM:SS", "title": "...", "folder": "...", "format": "mp3", "url": "..."}`
+- `GET /api/v1/download/history` — serves newest-first, max 200 entries
+- `POST /api/v1/library/mkdir` — creates new sub-folder (path-traversal safe)
+
+### Player State Synchronisation Fix (`web/js/*.js`, `server/main.py`)
+- **Root cause**: ES module singletons split when imports used inconsistent URLs (`?v=` strings)
+- **Fix 1**: Added `Cache-Control: no-cache` ASGI middleware for all `/web/*.js|html|css` responses
+  - Forces every browser to revalidate static files on load (ETag-based, bandwidth-efficient)
+  - Eliminates Firefox aggressive module cache issue permanently
+- **Fix 2**: Removed all `?v=` version strings from JS-to-JS imports (bare imports = same URL = same singleton)
+  - Reverts to the pre-regression state that worked in all browsers
+  - No manual version string management ever needed again
+
+### Resource Optimisations (`server/watcher.py`, `server/main.py`, `web/js/downloader.js`)
+- **Watcher debounce**: raised 0.5s → 2.5s — prevents per-chunk scan during yt-dlp downloads
+- **Watcher temp-file filter**: ignores `.part .ytdl .tmp .webp .jpg .png .webm .m4a` events entirely
+  - A single track download previously triggered 11+ full library scans; now triggers 1
+- **Scan concurrency lock**: `asyncio.Lock` prevents two overlapping `scan_library()` calls on same SQLite DB
+- **Adaptive job poll**: replaced always-on `setInterval(refreshJobs, 3000)` with self-cancelling poll
+  - Polling starts on download, stops when all jobs reach `done`/`failed`
+
+### Install Script Overhaul (`install.sh`)
+- Added `nodejs` to apt package list — fixes yt-dlp JS runtime requirement automatically
+- Auto-detects installed browser (Firefox/Chrome/Chromium) → writes `YTDLP_BROWSER` to `.env`
+- Sets `YTDLP_PATH=./venv/bin/yt-dlp` (venv binary, always the correct pip-managed version)
+- Generated `.env` now includes all variables with section comments matching `.env.example`
+- Auto-generates `SECRET_KEY` using `secrets.token_hex(32)` (cryptographically strong)
+- Prompts for admin username + password (defaults to `admin`/`freetopify` if skipped)
+- Existing `.env` preserved on re-run — only `MUSIC_LIBRARY_PATH`, `YTDLP_PATH`, `YTDLP_BROWSER` updated
+
+### Configuration (`server/config.py`, `.env`, `.env.example`)
+- Added `YTDLP_BROWSER` optional setting (empty = no cookie passthrough)
+- Reorganised `.env.example` into 8 labelled sections with inline comments
+- Added missing variables: `GUEST_PIN`, `GUEST_TOKEN_EXPIRE_HOURS`, `SECURE_COOKIES`, `MAX_CONNECTIONS`, `PARTY_BUFFER_MS`
+
+### Dependencies (`requirements.txt`)
+- Added `quickjs` — Python JS runtime, fallback for yt-dlp when Node.js unavailable
+- Existing: `fastapi`, `uvicorn[standard]`, `aiosqlite`, `mutagen`, `yt-dlp`, `PyJWT`, `bcrypt`, `watchdog`, `zeroconf`, `psutil`, `pytest`, `httpx`
+
+### Documentation (`docs/server.md`, `docs/web.md`, `README.md`)
+- Updated watcher debounce value (500ms → 2500ms), documented temp-file ignore list
+- Documented `Cache-Control: no-cache` middleware, scan lock, download history log format
+- Added all new API endpoints to both docs
+- Updated web.md: cache-busting rule removed, bare imports rule added, test checklist updated
+- Root README: full rewrite with downloader section, updated config table, stack table, quick start
+
+---
+
 ## 2026-05-24 — Gen Z UI/UX Redesign (Complete Frontend Overhaul)
 
 A full visual redesign of the Freetopify web client. All JS logic, player features,
