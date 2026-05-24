@@ -1,4 +1,4 @@
-import { apiPost, clearToken, setToken } from '/web/js/api.js';
+import { apiPost, clearToken, setToken } from '/web/js/api.js?v=20260524-13';
 
 export async function login(username, password) {
   const result = await apiPost('/auth/login', { username, password });
