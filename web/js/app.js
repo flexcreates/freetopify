@@ -3,7 +3,7 @@ import { logout } from '/web/js/auth.js';
 import { renderDownloads } from '/web/js/downloader.js';
 import { getCurrentLibraryPath, renderLibrary, goBackOne, hasHistory, showTrackContextMenu } from '/web/js/library.js';
 import { bindKeyboardShortcuts, getPlayerState, next, onPlayerStateChange, prev, seekToPercent, setVolume, togglePlay, toggleRepeat, toggleShuffle, jumpToQueueIndex } from '/web/js/player.js';
-import { connectLiveUpdates } from '/web/js/websocket.js?v=20260524-11';
+import { connectLiveUpdates } from '/web/js/websocket.js?v=20260524-12';
 
 const app = document.getElementById('app');
 const queueList = document.getElementById('queue-list');

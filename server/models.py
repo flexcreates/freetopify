@@ -52,6 +52,7 @@ class DownloadStartRequest(BaseModel):
     genre: str = "Music"
     format: str = "mp3"
     bitrate: str = "320k"
+    output_dir: str | None = None  # absolute path; if set, overrides genre-derived folder
 
 
 class GuestRequest(BaseModel):

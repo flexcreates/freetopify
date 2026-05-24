@@ -55,6 +55,7 @@ async def browse(
                 {
                     "name": child.name,
                     "path": rel,
+                    "absolute_path": str(child),
                     "type": "folder",
                     "child_count": subfolders,
                     "track_count": tracks,
@@ -185,6 +186,24 @@ async def stats(request: Request, _user: str = Depends(get_current_user_allow_gu
         f = await (await db.execute("SELECT COUNT(*) FROM folders")).fetchone()
         s = await (await db.execute("SELECT COALESCE(SUM(file_size_bytes), 0) FROM tracks")).fetchone()
     return {"total_tracks": t[0], "total_folders": f[0], "total_size_bytes": s[0]}
+
+@router.post('/mkdir')
+async def make_folder(request: Request, body: dict, _user: str = Depends(get_current_user)) -> dict:
+    """Create a new folder under the music library.
+    Body: { "path": "relative/path/to/new/folder" }
+    """
+    path = body.get('path', '').strip().strip('/')
+    if not path:
+        raise HTTPException(status_code=400, detail='missing path')
+    settings = request.app.state.settings
+    target = safe_path(settings.music_library_path, path)
+    if target.exists():
+        raise HTTPException(status_code=409, detail='folder already exists')
+    try:
+        target.mkdir(parents=True, exist_ok=False)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    return {'status': 'ok', 'path': path, 'absolute': str(target)}
 
 
 @router.post('/delete')

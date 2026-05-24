@@ -27,13 +27,13 @@ async def start_download(body: DownloadStartRequest, request: Request, _user: st
 
     try:
         if job_type == "podcast":
-            job_id = await downloader.download_podcast(body.url)
+            job_id = await downloader.download_podcast(body.url, output_dir=body.output_dir)
         elif job_type == "single":
-            job_id = await downloader.download_single(body.url, body.genre, body.format, body.bitrate)
+            job_id = await downloader.download_single(body.url, body.genre, body.format, body.bitrate, output_dir=body.output_dir)
         elif job_type == "mix":
-            job_id = await downloader.download_playlist(body.url, body.genre, body.format, body.bitrate)
+            job_id = await downloader.download_playlist(body.url, body.genre, body.format, body.bitrate, output_dir=body.output_dir)
         else:
-            job_id = await downloader.download_playlist(body.url, body.genre, body.format, body.bitrate)
+            job_id = await downloader.download_playlist(body.url, body.genre, body.format, body.bitrate, output_dir=body.output_dir)
     except RuntimeError as exc:
         raise HTTPException(status_code=429, detail=str(exc)) from exc
 
