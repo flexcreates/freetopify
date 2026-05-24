@@ -78,9 +78,15 @@ class LibraryWatcher:
         self.observer.schedule(handler, str(self.root), recursive=True)
         self.observer.start()
 
-    def stop(self) -> None:
+    async def stop(self) -> None:
         self.observer.stop()
-        self.observer.join(timeout=3)
+        await self.loop.run_in_executor(None, lambda: self.observer.join(timeout=3))
+        
+        pending = []
         for task in list(self.tasks):
             if not task.done():
                 task.cancel()
+                pending.append(task)
+                
+        if pending:
+            await asyncio.gather(*pending, return_exceptions=True)

@@ -89,7 +89,7 @@ async def lifespan(app: FastAPI):
     yield
 
     try:
-        app.state.watcher.stop()
+        await app.state.watcher.stop()
     except Exception:
         logging.exception("Watcher shutdown failed")
 
