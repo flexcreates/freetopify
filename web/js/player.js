@@ -19,12 +19,7 @@ function ensurePlayer() {
   audio.volume = Number.isFinite(saved) ? Math.max(0, Math.min(1, saved)) : 0.8;
   audio.addEventListener('ended', () => {
     console.log('[PLAYER] audio "ended" event fired.');
-    if (repeatMode) {
-      console.log('[PLAYER] Repeat One is ON. Replaying current track.');
-      playCurrent();
-    } else {
-      next();
-    }
+    next();
   });
   audio.addEventListener('timeupdate', notify);
   audio.addEventListener('play', notify);
@@ -166,7 +161,6 @@ export function next() {
 
   if (repeatMode) {
     playCurrent();
-    notify();
     return;
   }
 
@@ -184,7 +178,6 @@ export function next() {
     playCurrent();
   } else {
     if (current && current.isQueued) {
-      // Consume the queued track
       queue.splice(queueIndex, 1);
       if (queueIndex >= queue.length) queueIndex = 0;
       playCurrent();
@@ -202,6 +195,11 @@ export function next() {
 }
 
 export function prev() {
+  if (repeatMode) {
+    playCurrent();
+    return;
+  }
+
   const a = ensurePlayer();
   // If more than 3 seconds in, just restart the current song
   if (a.currentTime > 3) {
@@ -211,12 +209,6 @@ export function prev() {
   }
 
   if (queue.length === 0) return;
-
-  if (repeatMode) {
-    playCurrent();
-    notify();
-    return;
-  }
 
   if (shuffleMode) {
     let prevIdx = Math.floor(Math.random() * queue.length);
