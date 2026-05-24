@@ -6,7 +6,7 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -105,6 +105,31 @@ app.include_router(library_router)
 app.include_router(stream_router)
 app.include_router(downloader_router)
 app.mount("/web", StaticFiles(directory="web"), name="web")
+
+
+@app.middleware("http")
+async def no_cache_web_assets(request: Request, call_next):
+    """Force browsers to always revalidate /web/ static files.
+
+    Without this, Firefox aggressively caches ES modules and serves stale
+    instances even after version strings change, causing the player state
+    singleton to split into two disconnected instances (one plays audio,
+    one the UI listens to — controls and Now Playing view stop updating).
+
+    Setting Cache-Control: no-cache tells the browser to always send a
+    conditional request (If-None-Match / ETag). If the file hasn't changed,
+    the server returns 304 Not Modified — fast and bandwidth-efficient.
+    If the file changed, it returns the new content.
+    """
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/web/") and (
+        path.endswith(".js")
+        or path.endswith(".html")
+        or path.endswith(".css")
+    ):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
 
 
 @app.get("/")
