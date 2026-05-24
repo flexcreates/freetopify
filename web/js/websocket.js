@@ -3,8 +3,9 @@ import { getToken } from '/web/js/api.js';
 let ws;
 
 export function connectLiveUpdates(onEvent) {
-  if (!getToken()) return;
-  const url = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/live`;
+  const token = getToken();
+  if (!token) return;
+  const url = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/live?token=${encodeURIComponent(token)}`;
 
   ws = new WebSocket(url);
   ws.onmessage = (event) => {
@@ -23,6 +24,10 @@ export function connectLiveUpdates(onEvent) {
     ping();
   };
   ws.onclose = () => {
-    setTimeout(() => connectLiveUpdates(onEvent), 2000);
+    setTimeout(() => {
+      if (getToken()) {
+        connectLiveUpdates(onEvent);
+      }
+    }, 2000);
   };
 }

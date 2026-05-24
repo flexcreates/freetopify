@@ -54,6 +54,11 @@ class DownloadStartRequest(BaseModel):
     bitrate: str = "320k"
 
 
+class GuestRequest(BaseModel):
+    name: str
+    pin: str
+
+
 @dataclass
 class DownloadJob:
     job_id: str

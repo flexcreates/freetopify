@@ -16,7 +16,7 @@ from shutil import copy2
 import time
 import asyncio
 
-from server.auth import get_current_user, get_current_user_from_request
+from server.auth import get_current_user, get_current_user_allow_guest, get_current_user_from_request, get_current_user_from_request_allow_guest
 from server.models import BrowseResponse
 from server.router_stream import safe_path, _extract_embedded_art
 import logging
@@ -38,7 +38,7 @@ def _count_audio_recursive(folder) -> int:
 async def browse(
     request: Request,
     path: str = Query(default=""),
-    _user: str = Depends(get_current_user),
+    _user: str = Depends(get_current_user_allow_guest),
 ) -> BrowseResponse:
     settings = request.app.state.settings
     target = safe_path(settings.music_library_path, path)
@@ -84,7 +84,7 @@ async def browse(
 async def recursive_tracks(
     request: Request,
     path: str = Query(default=""),
-    _user: str = Depends(get_current_user),
+    _user: str = Depends(get_current_user_allow_guest),
 ) -> dict:
     settings = request.app.state.settings
     target = safe_path(settings.music_library_path, path)
@@ -120,7 +120,7 @@ async def recursive_tracks(
 
 
 @router.get("/search")
-async def search(request: Request, q: str, _user: str = Depends(get_current_user)) -> dict:
+async def search(request: Request, q: str, _user: str = Depends(get_current_user_allow_guest)) -> dict:
     settings = request.app.state.settings
     async with aiosqlite.connect(str(settings.database_path)) as db:
         cur = await db.execute(
@@ -157,7 +157,7 @@ async def search(request: Request, q: str, _user: str = Depends(get_current_user
 
 
 @router.get("/track/{track_id}")
-async def track(request: Request, track_id: str, _user: str = Depends(get_current_user)) -> dict:
+async def track(request: Request, track_id: str, _user: str = Depends(get_current_user_allow_guest)) -> dict:
     settings = request.app.state.settings
     async with aiosqlite.connect(str(settings.database_path)) as db:
         cur = await db.execute("SELECT * FROM tracks WHERE id = ?", (track_id,))
@@ -178,7 +178,7 @@ async def track(request: Request, track_id: str, _user: str = Depends(get_curren
 
 
 @router.get("/stats")
-async def stats(request: Request, _user: str = Depends(get_current_user)) -> dict:
+async def stats(request: Request, _user: str = Depends(get_current_user_allow_guest)) -> dict:
     settings = request.app.state.settings
     async with aiosqlite.connect(str(settings.database_path)) as db:
         t = await (await db.execute("SELECT COUNT(*) FROM tracks")).fetchone()
@@ -308,7 +308,7 @@ async def copy_item(request: Request, body: dict, _user: str = Depends(get_curre
 
 
 @router.get('/meta')
-async def get_metadata(request: Request, path: str = Query(default=''), _user: str = Depends(get_current_user)) -> dict:
+async def get_metadata(request: Request, path: str = Query(default=''), _user: str = Depends(get_current_user_allow_guest)) -> dict:
     settings = request.app.state.settings
     if not path:
         raise HTTPException(status_code=400, detail='missing path')
@@ -387,7 +387,7 @@ async def upload_cover(request: Request, path: str = Query(default=''), file: Up
     if not path:
         raise HTTPException(status_code=400, detail='missing path')
     # authenticate: accept token via query or Authorization header
-    get_current_user_from_request(request, token_query=token)
+    get_current_user_from_request_allow_guest(request, token_query=token, allow_guest=True)
     settings = request.app.state.settings
     target = safe_path(settings.music_library_path, path)
     if not target.exists() or not target.is_file():
@@ -465,7 +465,7 @@ async def upload_cover(request: Request, path: str = Query(default=''), file: Up
 async def get_folder_cover(request: Request, path: str = Query(default=''), token: str | None = Query(default=None)):
     """Return an embedded cover image for a folder (choose a random track in folder)."""
     # allow token query param for thumbnail access
-    get_current_user_from_request(request, token_query=token)
+    get_current_user_from_request_allow_guest(request, token_query=token, allow_guest=True)
     settings = request.app.state.settings
     target = safe_path(settings.music_library_path, path) if path else settings.music_library_path
     if not target.exists() or not target.is_dir():

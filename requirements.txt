@@ -12,3 +12,5 @@ yt-dlp
 psutil
 pytest
 httpx
+requests
+pydantic

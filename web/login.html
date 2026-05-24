@@ -8,56 +8,250 @@
   <link rel="stylesheet" href="/web/css/variables.css" />
   <link rel="stylesheet" href="/web/css/app.css" />
   <style>
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(600px 300px at 50% 12%, rgba(126, 188, 255, 0.12), transparent 60%),
+        radial-gradient(500px 220px at 18% 28%, rgba(74, 163, 255, 0.08), transparent 55%);
+      opacity: 0.9;
+    }
     body {
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100vh;
+      padding: 24px;
     }
     .login-card {
       width: 100%;
-      max-width: 340px;
-      padding: var(--space-3);
+      max-width: 420px;
+      padding: 28px;
       background: linear-gradient(180deg, rgba(29,69,120,0.48), rgba(11,25,44,0.88));
       border: 1px solid rgba(126, 188, 255, 0.14);
       border-radius: var(--radius-lg);
       backdrop-filter: blur(12px);
       box-shadow: 0 16px 48px rgba(3, 8, 20, 0.6);
       text-align: center;
+      position: relative;
+      z-index: 1;
     }
     .login-card h1 {
-      margin-bottom: var(--space-3);
-      font-size: 28px;
+      margin: 0 0 8px;
+      font-size: 30px;
       font-weight: 700;
       letter-spacing: -0.5px;
       background: linear-gradient(135deg, #ffffff, #7ebcff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
+    .login-lead {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 0.96rem;
+      line-height: 1.45;
+    }
+    .role-switcher {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .role-option {
+      border: 1px solid rgba(126, 188, 255, 0.18);
+      background: rgba(13, 31, 54, 0.72);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 14px 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.18s ease;
+    }
+    .role-option:hover {
+      transform: translateY(-1px);
+      border-color: rgba(126, 188, 255, 0.36);
+      box-shadow: 0 10px 24px rgba(2, 10, 22, 0.3);
+    }
+    .role-option.is-active {
+      background: linear-gradient(180deg, rgba(74, 163, 255, 0.26), rgba(13, 31, 54, 0.88));
+      border-color: rgba(126, 188, 255, 0.5);
+    }
+    .role-title {
+      font-size: 0.97rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .role-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .step-panel {
+      text-align: left;
+      margin-bottom: 16px;
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(9, 22, 39, 0.58);
+      border: 1px solid rgba(126, 188, 255, 0.12);
+    }
+    .step-panel[hidden] {
+      display: none;
+    }
+    .step-label {
+      display: block;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9cc9ff;
+      margin-bottom: 10px;
+    }
+    .hint {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+    .field-row {
+      display: grid;
+      gap: 10px;
+    }
+    .field-row + .field-row {
+      margin-top: 12px;
+    }
+    .field-caption {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+    .field-caption strong {
+      color: var(--text);
+      font-weight: 650;
+    }
+    .credential-stack {
+      display: grid;
+      gap: 14px;
+    }
     .login-form {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
+      text-align: left;
+    }
+    .credential-choice {
+      display: none;
+    }
+    .credential-choice.is-active {
+      display: block;
+    }
+    .divider {
+      margin: 18px 0;
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.08);
     }
   </style>
 </head>
 <body>
   <main class="login-card">
     <h1>Freetopify</h1>
+    <p class="login-lead">Choose a role, then enter only the details needed to continue.</p>
+
+    <div class="role-switcher" role="tablist" aria-label="Login type selector">
+      <button type="button" class="role-option is-active" data-mode="admin" aria-selected="true">
+        <div class="role-title">Admin login</div>
+        <div class="role-desc">Use your admin account.</div>
+      </button>
+      <button type="button" class="role-option" data-mode="guest" aria-selected="false">
+        <div class="role-title">Guest access</div>
+        <div class="role-desc">Use a name and guest PIN.</div>
+      </button>
+    </div>
+
     <form id="login-form" class="login-form">
-      <input id="username" class="text-input" placeholder="Username" required />
-      <div style="position: relative; width: 100%;">
-        <input id="password" class="text-input" type="password" placeholder="Password" required style="width: 100%; padding-right: 40px;" />
-        <button type="button" id="toggle-pwd" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #b3cae3; font-size: 16px; padding: 4px;">👁️</button>
-      </div>
-      <button type="submit" class="primary-btn" style="margin-top: 8px;">Login</button>
+      <section class="step-panel credential-choice is-active" data-mode-panel="admin">
+        <div class="field-row">
+          <div class="field-caption">
+            <strong>Username</strong>
+            <span>Admin account</span>
+          </div>
+          <input id="username" class="text-input" autocomplete="username" placeholder="Admin username" required />
+          <p class="hint">Enter your admin username.</p>
+        </div>
+        <div class="field-row">
+          <div class="field-caption">
+            <strong>Password</strong>
+            <span>Secret</span>
+          </div>
+          <div style="position: relative; width: 100%;">
+            <input id="password" class="text-input" type="password" autocomplete="current-password" placeholder="Password" required style="width: 100%; padding-right: 40px;" />
+            <button type="button" id="toggle-pwd" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #b3cae3; font-size: 16px; padding: 4px;">👁️</button>
+          </div>
+          <p class="hint">Enter your admin password.</p>
+        </div>
+        <button type="submit" class="primary-btn" style="margin-top: 6px;">Log in</button>
+      </section>
+
+      <section class="step-panel credential-choice" data-mode-panel="guest" hidden>
+        <div class="field-row">
+          <div class="field-caption">
+            <strong>Name</strong>
+            <span>Display name</span>
+          </div>
+          <input id="guest-name" class="text-input" autocomplete="nickname" placeholder="Your name" required />
+          <p class="hint">Enter the name you want shown.</p>
+        </div>
+        <div class="field-row">
+          <div class="field-caption">
+            <strong>Guest PIN</strong>
+            <span>Access code</span>
+          </div>
+          <input id="guest-pin" class="text-input" type="password" autocomplete="one-time-code" placeholder="Guest PIN" required />
+          <p class="hint">Enter the shared guest PIN.</p>
+        </div>
+        <button type="submit" class="secondary-btn" style="margin-top: 6px;">Join</button>
+      </section>
     </form>
   </main>
-  <script type="module" src="/web/js/auth.js"></script>
+  <script type="module" src="/web/js/auth.js?v=20260524-1"></script>
   <script>
-    const pwd = document.getElementById('password');
     const toggle = document.getElementById('toggle-pwd');
+    const roleButtons = Array.from(document.querySelectorAll('.role-option'));
+    const panels = Array.from(document.querySelectorAll('[data-mode-panel]'));
+    const loginButton = document.querySelector('#login-form button[type="submit"]');
+    let activeMode = 'admin';
+
+    function setMode(mode) {
+      activeMode = mode;
+      roleButtons.forEach((button) => {
+        const isActive = button.dataset.mode === mode;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-selected', String(isActive));
+      });
+      panels.forEach((panel) => {
+        const isActive = panel.dataset.modePanel === mode;
+        panel.classList.toggle('is-active', isActive);
+        panel.hidden = !isActive;
+        panel.querySelectorAll('input, textarea, select').forEach((field) => {
+          field.disabled = !isActive;
+        });
+      });
+      if (loginButton) {
+        loginButton.textContent = mode === 'admin' ? 'Continue as Admin' : 'Continue as Guest';
+      }
+    }
+
+    roleButtons.forEach((button) => {
+      button.addEventListener('click', () => setMode(button.dataset.mode));
+    });
+
     toggle.addEventListener('click', () => {
+      const pwd = document.getElementById('password');
+      if (!pwd) return;
       if (pwd.type === 'password') {
         pwd.type = 'text';
         toggle.textContent = '🙈';
@@ -66,6 +260,8 @@
         toggle.textContent = '👁️';
       }
     });
+
+    setMode(activeMode);
   </script>
 </body>
 </html>

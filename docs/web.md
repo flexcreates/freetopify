@@ -45,11 +45,17 @@ web/
 ## Rules
 - Hash routes: `#login #library #player #downloads #settings`
 - Save token in `localStorage`
+- Login screen should stay minimal: role first, then only the required fields
 - Dark default, light toggle save in `localStorage`
 - Live updates from `/ws/live?token=...`
 - Download progress from SSE `/api/v1/download/progress/{job_id}`
 - No CDN, no internet dependency
 - Use only local assets and bundled CSS/JS
+
+## Login
+- Admin login uses the server account
+- Guest login uses a display name plus shared PIN
+- Keep helper text short and avoid exposing internal config names on the page
 
 ## API Use
 - Login: `POST /auth/login`

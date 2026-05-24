@@ -13,6 +13,11 @@ Self-hosted, folder-first music server.
 - Web UI (light client) implemented
 - Next phase: Flutter Android App implementation
 
+## Login
+- Admin users sign in with the server account from `.env`
+- Optional guest access can be enabled with `GUEST_PIN` in `.env`
+- The login screen keeps the prompt minimal: choose a role, then enter only the required fields
+
 ## Quick Start
 ```bash
 ./install.sh
@@ -20,6 +25,11 @@ source venv/bin/activate
 pytest -q server/tests/test_api.py
 uvicorn server.main:app --host 0.0.0.0 --port 7171
 ```
+
+## Config Notes
+- `GUEST_PIN` enables guest sign-in
+- `GUEST_TOKEN_EXPIRE_HOURS` sets shorter guest token lifetime
+- `SECURE_COOKIES=true` marks auth cookies secure when running behind HTTPS
 
 ## Default Health URL
 - `http://127.0.0.1:7171/api/v1/system/health`

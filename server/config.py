@@ -26,6 +26,9 @@ class Settings:
     mdns_hostname: str
     tailscale_ip: str
     enable_mdns: bool
+    guest_pin: str
+    guest_token_expire_hours: int
+    secure_cookies: bool
 
 
 REQUIRED_KEYS = [
@@ -92,4 +95,7 @@ def load_settings() -> Settings:
         mdns_hostname=_required_env("MDNS_HOSTNAME"),
         tailscale_ip=_optional_env("TAILSCALE_IP", ""),
         enable_mdns=_optional_bool_env("ENABLE_MDNS", False),
+        guest_pin=_optional_env("GUEST_PIN", ""),
+        guest_token_expire_hours=int(_optional_env("GUEST_TOKEN_EXPIRE_HOURS", "1")),
+        secure_cookies=_optional_bool_env("SECURE_COOKIES", False),
     )

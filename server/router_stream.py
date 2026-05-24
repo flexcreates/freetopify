@@ -7,7 +7,7 @@ from fastapi import APIRouter, Header, HTTPException, Query, Request, status
 from fastapi.responses import FileResponse, Response, StreamingResponse
 from mutagen import File as MutagenFile
 
-from server.auth import get_current_user_from_request
+from server.auth import get_current_user_from_request, get_current_user_from_request_allow_guest
 
 router = APIRouter(tags=["stream"])
 
@@ -65,7 +65,7 @@ async def stream_audio(
     range_header: str | None = Header(default=None, alias="Range"),
     token: str | None = Query(default=None),
 ):
-    get_current_user_from_request(request, token_query=token)
+    get_current_user_from_request_allow_guest(request, token_query=token, allow_guest=True)
     settings = request.app.state.settings
     file = safe_path(settings.music_library_path, file_path)
     if not file.exists() or not file.is_file():
@@ -126,7 +126,7 @@ async def thumbnail(
     request: Request,
     token: str | None = Query(default=None),
 ):
-    get_current_user_from_request(request, token_query=token)
+    get_current_user_from_request_allow_guest(request, token_query=token, allow_guest=True)
     settings = request.app.state.settings
 
     # Accept either relative path or DB id.

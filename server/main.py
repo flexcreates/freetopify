@@ -114,7 +114,7 @@ async def root_redirect():
 
 @app.websocket("/ws/live")
 async def ws_live(websocket: WebSocket):
-    token = websocket.query_params.get("token", "")
+    token = websocket.query_params.get("token", "") or websocket.cookies.get("freetopify_token", "")
     settings = websocket.app.state.settings
     from server.auth import decode_access_token
 

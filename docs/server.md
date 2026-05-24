@@ -114,6 +114,11 @@ Must keys:
 - `MDNS_HOSTNAME`
 - `TAILSCALE_IP`
 
+Optional guest config:
+- `GUEST_PIN`
+- `GUEST_TOKEN_EXPIRE_HOURS`
+- `SECURE_COOKIES`
+
 ## .env (Local)
 Copy from `.env.example`. Change `SECRET_KEY` now.
 
@@ -140,6 +145,7 @@ python3 -c "import server.<module_name>"
 
 ## Rules While Coding
 - All endpoints auth required except `/api/v1/system/health`
+- Guest access can be enabled with `GUEST_PIN`; keep guest scope read-only on the web client
 - Protect path traversal with safe path check
 - Stream endpoint support Range (`206`, `Accept-Ranges`, `Content-Range`)
 - Watcher debounce 500ms
