@@ -30,6 +30,7 @@ class Settings:
     # Optional: browser name for cookie passthrough (chrome|firefox|edge|safari)
     # Helps bypass YouTube 429 rate-limit errors by using your logged-in session
     ytdlp_browser: str  # e.g. "chrome" or "firefox"; empty = no cookies
+    max_connections: int
 
 
 REQUIRED_KEYS = [
@@ -97,4 +98,5 @@ def load_settings() -> Settings:
         guest_token_expire_hours=int(_optional_env("GUEST_TOKEN_EXPIRE_HOURS", "1")),
         secure_cookies=_optional_bool_env("SECURE_COOKIES", False),
         ytdlp_browser=_optional_env("YTDLP_BROWSER", ""),
+        max_connections=int(_optional_env("MAX_CONNECTIONS", "0")),
     )

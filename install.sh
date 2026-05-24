@@ -214,12 +214,9 @@ GUEST_PIN=$GUEST_PIN
 GUEST_TOKEN_EXPIRE_HOURS=1
 
 
-# ── Party Mode / DJ Hub ───────────────────────
-# Max simultaneous WebSocket connections (0 = unlimited)
+# ── Network ───────────────────────
+# Max simultaneous connections to the server (0 = unlimited)
 MAX_CONNECTIONS=0
-
-# Audio sync buffer in milliseconds for party/DJ mode
-PARTY_BUFFER_MS=500
 EOF
   echo "✅ .env created with auto-generated secret key."
 fi
