@@ -1,6 +1,6 @@
-import { apiGet, apiPost, apiDelete } from '/web/js/api.js?v=20260524-13';
-import { openMetaEditor } from '/web/js/meta.js?v=20260524-13';
-import { setQueue } from '/web/js/player.js?v=20260524-13';
+import { apiGet, apiPost, apiDelete } from '/web/js/api.js';
+import { openMetaEditor } from '/web/js/meta.js';
+import { setQueue } from '/web/js/player.js';
 
 let currentPath = '';
 

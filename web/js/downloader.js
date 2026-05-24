@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from '/web/js/api.js?v=20260524-13';
+import { apiGet, apiPost } from '/web/js/api.js';
 
 // ── Helpers ────────────────────────────────────────────────
 function esc(v) {

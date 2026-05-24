@@ -1,4 +1,4 @@
-import { getToken } from '/web/js/api.js?v=20260524-13';
+import { getToken } from '/web/js/api.js';
 
 let ws;
 

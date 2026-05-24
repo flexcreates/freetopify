@@ -1,9 +1,9 @@
-import { apiGet, clearToken, getToken } from '/web/js/api.js?v=20260524-13';
-import { logout } from '/web/js/auth.js?v=20260524-13';
-import { renderDownloads } from '/web/js/downloader.js?v=20260524-13';
-import { getCurrentLibraryPath, renderLibrary, goBackOne, hasHistory, showTrackContextMenu } from '/web/js/library.js?v=20260524-13';
-import { bindKeyboardShortcuts, getPlayerState, next, onPlayerStateChange, prev, seekToPercent, setVolume, togglePlay, toggleRepeat, toggleShuffle, jumpToQueueIndex } from '/web/js/player.js?v=20260524-13';
-import { connectLiveUpdates } from '/web/js/websocket.js?v=20260524-13';
+import { apiGet, clearToken, getToken } from '/web/js/api.js';
+import { logout } from '/web/js/auth.js';
+import { renderDownloads } from '/web/js/downloader.js';
+import { getCurrentLibraryPath, renderLibrary, goBackOne, hasHistory, showTrackContextMenu } from '/web/js/library.js';
+import { bindKeyboardShortcuts, getPlayerState, next, onPlayerStateChange, prev, seekToPercent, setVolume, togglePlay, toggleRepeat, toggleShuffle, jumpToQueueIndex } from '/web/js/player.js';
+import { connectLiveUpdates } from '/web/js/websocket.js';
 
 const app = document.getElementById('app');
 const queueList = document.getElementById('queue-list');

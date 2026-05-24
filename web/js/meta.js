@@ -1,4 +1,4 @@
-import { apiGet, apiPost, getToken } from '/web/js/api.js?v=20260524-13';
+import { apiGet, apiPost, getToken } from '/web/js/api.js';
 
 function createInput(labelText, name, value = '') {
   const wrap = document.createElement('div');
