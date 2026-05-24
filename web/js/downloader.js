@@ -334,8 +334,10 @@ export function renderDownloads(mount) {
         if (d.status === 'done' || d.status === 'failed') {
             es.close();
             refreshJobs();
-            // Reload history so the completed download appears immediately
-            if (d.status === 'done') loadHistory();
+            if (d.status === 'done') {
+              loadHistory();   // show new entry in download history
+              loadFolders();   // refresh track counts on folder cards
+            }
           }
       } catch { log.textContent += evt.data + '\n'; }
     };
