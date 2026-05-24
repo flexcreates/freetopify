@@ -114,6 +114,12 @@ class Downloader:
         if self.browser:
             cmd += ["--cookies-from-browser", self.browser]
 
+        # Download yt-dlp's official challenge solver script from GitHub.
+        # Required for YouTube signature + n-challenge solving with any JS runtime.
+        # yt-dlp explicitly recommends this in its own warning output.
+        # The script is cached locally after first download — fast on subsequent runs.
+        cmd += ["--remote-components", "ejs:github"]
+
         # JS runtime for YouTube signature & n-challenge solving.
         # node is preferred — most capable. quickjs is Python-only fallback.
         node_path = shutil.which("node") or shutil.which("nodejs")
