@@ -90,8 +90,9 @@ Copy `.env.example` to `.env` (the installer does this automatically).
 | `YTDLP_BROWSER` | _(auto-detected)_ | Browser for cookie passthrough (`firefox`\|`chrome`) |
 | `DEFAULT_DOWNLOAD_FORMAT` | `mp3` | Download format: `mp3` \| `flac` \| `ogg` \| `m4a` |
 | `DEFAULT_DOWNLOAD_BITRATE` | `320k` | Audio bitrate (max quality for MP3) |
-| `ENABLE_MDNS` | `false` | Advertise on local network via mDNS/Bonjour |
-| `SECURE_COOKIES` | `false` | Set `true` when running behind HTTPS |
+| `ENABLE_SSL` | `true` | Auto-generate certs and run on HTTPS locally |
+| `ENABLE_MDNS` | `true` | Advertise on local network via mDNS/Bonjour |
+| `SECURE_COOKIES` | `true` | Ensure cookies are sent securely (required for HTTPS) |
 
 Full reference: [`.env.example`](.env.example)
 
