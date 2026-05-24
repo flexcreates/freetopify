@@ -387,7 +387,7 @@ async def upload_cover(request: Request, path: str = Query(default=''), file: Up
     if not path:
         raise HTTPException(status_code=400, detail='missing path')
     # authenticate: accept token via query or Authorization header
-    get_current_user_from_request_allow_guest(request, token_query=token, allow_guest=True)
+    await get_current_user_from_request_allow_guest(request, token_query=token, allow_guest=True)
     settings = request.app.state.settings
     target = safe_path(settings.music_library_path, path)
     if not target.exists() or not target.is_file():
@@ -465,7 +465,7 @@ async def upload_cover(request: Request, path: str = Query(default=''), file: Up
 async def get_folder_cover(request: Request, path: str = Query(default=''), token: str | None = Query(default=None)):
     """Return an embedded cover image for a folder (choose a random track in folder)."""
     # allow token query param for thumbnail access
-    get_current_user_from_request_allow_guest(request, token_query=token, allow_guest=True)
+    await get_current_user_from_request_allow_guest(request, token_query=token, allow_guest=True)
     settings = request.app.state.settings
     target = safe_path(settings.music_library_path, path) if path else settings.music_library_path
     if not target.exists() or not target.is_dir():

@@ -65,15 +65,50 @@ def decode_access_token(secret_key: str, token: str) -> dict:
 
 
 async def ensure_default_admin(database_path: str, username: str, password: str) -> None:
+    """Upsert the admin user on every server start.
+
+    This means changing ADMIN_USERNAME / ADMIN_PASSWORD in .env and
+    restarting the server immediately invalidates all old tokens — the
+    old username no longer exists in the DB so its JWT is rejected.
+    """
+    new_hash = hash_password(password)
     async with aiosqlite.connect(database_path) as db:
+        # If table is empty, insert fresh.
         cursor = await db.execute("SELECT COUNT(*) FROM users")
         total = (await cursor.fetchone())[0]
         if total == 0:
             await db.execute(
                 "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-                (username, hash_password(password)),
+                (username, new_hash),
             )
-            await db.commit()
+        else:
+            # Always update the first admin row to match current .env credentials.
+            # If the username changed, the old row is deleted and the new one inserted
+            # so that any JWT issued under the old username becomes invalid.
+            cursor = await db.execute("SELECT username FROM users LIMIT 1")
+            existing_row = await cursor.fetchone()
+            existing_username = existing_row[0] if existing_row else None
+
+            if existing_username != username:
+                # Username changed — remove old row, insert new one.
+                # Old JWTs carried the old sub and will now fail the DB check.
+                await db.execute("DELETE FROM users WHERE username = ?", (existing_username,))
+                await db.execute(
+                    "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+                    (username, new_hash),
+                )
+                logger.info(
+                    "Admin username changed %s → %s; all prior sessions invalidated",
+                    existing_username, username,
+                )
+            else:
+                # Username unchanged — still re-hash and update the password so a
+                # password change in .env is reflected immediately on restart.
+                await db.execute(
+                    "UPDATE users SET password_hash = ? WHERE username = ?",
+                    (new_hash, username),
+                )
+        await db.commit()
 
 
 async def get_current_user(
@@ -89,6 +124,13 @@ async def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Guest access not permitted")
     if not subject:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
+    # Verify the user still exists in the database.
+    # This ensures that changing credentials in .env + restarting immediately
+    # invalidates any previously issued tokens.
+    async with aiosqlite.connect(str(settings.database_path)) as db:
+        cursor = await db.execute("SELECT 1 FROM users WHERE username = ?", (subject,))
+        if not await cursor.fetchone():
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session invalidated — please log in again")
     return str(subject)
 
 
@@ -97,18 +139,26 @@ async def get_current_user_allow_guest(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> str:
     token = credentials.credentials
-    payload = decode_access_token(request.app.state.settings.secret_key, token)
+    settings = request.app.state.settings
+    payload = decode_access_token(settings.secret_key, token)
     subject = payload.get("sub")
     if not subject:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
+    # Guest tokens carry role=guest and a sub like "guest:name" — no DB row exists for them.
+    # Admin tokens must have a matching DB row.
+    if payload.get("role") != "guest":
+        async with aiosqlite.connect(str(settings.database_path)) as db:
+            cursor = await db.execute("SELECT 1 FROM users WHERE username = ?", (subject,))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session invalidated — please log in again")
     return str(subject)
 
 
-def get_current_user_from_request(request: Request, token_query: str | None = None) -> str:
-    return get_current_user_from_request_allow_guest(request, token_query=token_query, allow_guest=False)
+async def get_current_user_from_request(request: Request, token_query: str | None = None) -> str:
+    return await get_current_user_from_request_allow_guest(request, token_query=token_query, allow_guest=False)
 
 
-def get_current_user_from_request_allow_guest(
+async def get_current_user_from_request_allow_guest(
     request: Request,
     token_query: str | None = None,
     allow_guest: bool = True,
@@ -123,12 +173,19 @@ def get_current_user_from_request_allow_guest(
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing token")
 
-    payload = decode_access_token(request.app.state.settings.secret_key, token)
+    settings = request.app.state.settings
+    payload = decode_access_token(settings.secret_key, token)
     subject = payload.get("sub")
     if not allow_guest and payload.get("role") == "guest":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Guest access not permitted")
     if not subject:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
+    # Validate admin tokens against the DB — invalidates sessions after credential rotation.
+    if payload.get("role") != "guest":
+        async with aiosqlite.connect(str(settings.database_path)) as db:
+            cursor = await db.execute("SELECT 1 FROM users WHERE username = ?", (subject,))
+            if not await cursor.fetchone():
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session invalidated — please log in again")
     return str(subject)
 
 

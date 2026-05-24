@@ -64,7 +64,7 @@ async def cancel_job(job_id: str, request: Request, _user: str = Depends(get_cur
 
 @router.get("/progress/{job_id}")
 async def progress(job_id: str, request: Request, token: str | None = None):
-    get_current_user_from_request(request, token_query=token)
+    await get_current_user_from_request(request, token_query=token)
     downloader = request.app.state.downloader
 
     async def stream():
