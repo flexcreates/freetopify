@@ -113,10 +113,10 @@ function updateNowBar() {
   } else {
     queueList.innerHTML = state.queue.map((t, i) => `
       <div class="queue-item${i === state.queueIndex ? ' playing' : ''}" data-idx="${i}" style="display: flex; justify-content: space-between; align-items: center;">
-        <div class="queue-item-title" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; ${t.isQueued ? 'color: var(--muted);' : ''}">
-          ${i === state.queueIndex ? '▶ ' : `${i + 1}. `}${t.isQueued ? '★ ' : ''}${escapeHtml(t.title || t.name || 'Track')}
+        <div class="queue-item-title" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; ${t.isQueued ? 'color: var(--violet, #a78bfa); font-weight: 500;' : ''}">
+          ${i === state.queueIndex ? '▶ ' : `${i + 1}. `}${t.isQueued ? '• ' : ''}${escapeHtml(t.title || t.name || 'Track')}
         </div>
-        ${t.isQueued ? `<button class="queue-remove-btn" data-remove-idx="${i}" style="background: none; border: none; color: var(--muted); cursor: pointer; padding: 0 4px; font-size: 1.1rem; line-height: 1;">×</button>` : ''}
+        ${t.isQueued ? `<button class="queue-remove-btn" data-remove-idx="${i}" style="background: none; border: none; color: var(--violet, #a78bfa); cursor: pointer; font-size: 1.3rem; padding: 0 4px; display: flex; align-items: center; justify-content: center; opacity: 0.8; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">×</button>` : ''}
       </div>
     `).join('');
   }

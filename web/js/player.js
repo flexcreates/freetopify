@@ -139,9 +139,10 @@ export function playCurrent() {
 
   console.log(`[PLAYER] playCurrent() called. item.path: ${item.path}`);
   if (a.getAttribute('data-playing-path') === item.path) {
-    // Exact same track (e.g. single song loop) - just rewind
-    console.log(`[PLAYER] Exact same track detected. Rewinding currentTime to 0.`);
-    a.currentTime = 0;
+    // Exact same track (e.g. single song loop) - reload to guarantee restart on streams
+    console.log(`[PLAYER] Exact same track detected. Reloading for repeat.`);
+    a.src = newSrc;
+    a.load();
     a.play().catch(e => console.error('[PLAYER] Play error:', e));
   } else {
     console.log(`[PLAYER] New track detected. Updating src and calling load().`);
