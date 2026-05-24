@@ -2,7 +2,7 @@ import { apiGet, clearToken, getToken } from '/web/js/api.js';
 import { logout } from '/web/js/auth.js';
 import { renderDownloads } from '/web/js/downloader.js';
 import { getCurrentLibraryPath, renderLibrary, goBackOne, hasHistory, showTrackContextMenu } from '/web/js/library.js';
-import { bindKeyboardShortcuts, getPlayerState, next, onPlayerStateChange, prev, seekToPercent, setVolume, togglePlay, toggleRepeat, toggleShuffle, jumpToQueueIndex } from '/web/js/player.js';
+import { bindKeyboardShortcuts, getPlayerState, next, onPlayerStateChange, prev, seekToPercent, setVolume, togglePlay, toggleRepeat, toggleShuffle, jumpToQueueIndex, removeFromQueue } from '/web/js/player.js';
 import { connectLiveUpdates } from '/web/js/websocket.js';
 
 const app = document.getElementById('app');
@@ -112,8 +112,11 @@ function updateNowBar() {
     queueList.textContent = 'No tracks queued';
   } else {
     queueList.innerHTML = state.queue.map((t, i) => `
-      <div class="queue-item${i === state.queueIndex ? ' playing' : ''}" data-idx="${i}">
-        ${i === state.queueIndex ? '▶ ' : `${i + 1}. `}${escapeHtml(t.title || t.name || 'Track')}
+      <div class="queue-item${i === state.queueIndex ? ' playing' : ''}" data-idx="${i}" style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="queue-item-title" style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          ${i === state.queueIndex ? '▶ ' : `${i + 1}. `}${escapeHtml(t.title || t.name || 'Track')}
+        </div>
+        <button class="queue-remove-btn" data-remove-idx="${i}" style="background: none; border: none; color: var(--muted); cursor: pointer; padding: 0 4px; font-size: 1.1rem; line-height: 1;">×</button>
       </div>
     `).join('');
   }
@@ -140,6 +143,14 @@ function bindNowBar() {
 
   if (queueList) {
     queueList.addEventListener('click', (e) => {
+      const removeBtn = e.target.closest('.queue-remove-btn');
+      if (removeBtn) {
+        e.stopPropagation();
+        const idx = Number(removeBtn.getAttribute('data-remove-idx'));
+        removeFromQueue(idx);
+        return;
+      }
+      
       const item = e.target.closest('.queue-item');
       if (item) {
         const idx = Number(item.getAttribute('data-idx'));

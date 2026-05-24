@@ -1,6 +1,6 @@
 import { apiGet, apiPost, apiDelete } from '/web/js/api.js';
 import { openMetaEditor } from '/web/js/meta.js';
-import { setQueue } from '/web/js/player.js';
+import { setQueue, addToQueue, playNext } from '/web/js/player.js';
 
 let currentPath = '';
 
@@ -246,6 +246,10 @@ export async function renderLibrary(mount, path = '', isBack = false) {
       setQueue(tracks, idx);
       window.location.hash = '#player';
     });
+    el.addEventListener('contextmenu', (e) => {
+      const idx = Number(el.getAttribute('data-track-index'));
+      showTrackContextMenu(e, tracks[idx], mount);
+    });
   });
 
   tracks.forEach((t, i) => {
@@ -423,6 +427,8 @@ export function showTrackContextMenu(ev, track, mount) {
   ev.preventDefault();
   const path = track.path;
   const items = [
+    { label: 'Play Next', onClick: () => playNext(track) },
+    { label: 'Add to Queue', onClick: () => addToQueue(track) },
     { label: 'Cut', onClick: () => setClipboard({ action: 'cut', type: 'track', path }) },
     { label: 'Copy', onClick: () => setClipboard({ action: 'copy', type: 'track', path }) },
     { label: 'Paste', onClick: async () => {

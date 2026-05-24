@@ -29,7 +29,6 @@ Point it at your music folders and get a beautiful browser interface to play, qu
 | 📡 **Live sync** | WebSocket pushes library updates to all connected clients in real time |
 | 📱 **Fully responsive** | Desktop · tablet · phone — same interface, perfectly scaled |
 | 🌐 **Zero cloud dependency** | Runs entirely on your LAN — no internet needed to play music |
-| 🔍 **mDNS discovery** | Find your server by name on the local network — no IP hunting |
 | 🎨 **Neon glassmorphism UI** | Dark-mode first, animated mesh background, vinyl disk spinner |
 
 ---

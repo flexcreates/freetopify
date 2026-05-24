@@ -76,6 +76,49 @@ export function jumpToQueueIndex(idx) {
   }
 }
 
+export function addToQueue(item) {
+  queue.push(item);
+  if (queue.length === 1) {
+    queueIndex = 0;
+    playCurrent();
+  }
+  notify();
+}
+
+export function playNext(item) {
+  if (queue.length === 0) {
+    queue.push(item);
+    queueIndex = 0;
+    playCurrent();
+  } else {
+    queue.splice(queueIndex + 1, 0, item);
+  }
+  notify();
+}
+
+export function removeFromQueue(idx) {
+  if (idx >= 0 && idx < queue.length) {
+    queue.splice(idx, 1);
+    if (idx < queueIndex) {
+      queueIndex--; // Shift current playing index back
+    } else if (idx === queueIndex) {
+      // We removed the currently playing track
+      if (queue.length === 0) {
+        queueIndex = -1;
+        const a = ensurePlayer();
+        a.pause();
+        a.removeAttribute('data-playing-path');
+        a.src = '';
+      } else {
+        // Play the next track (which has now fallen into current queueIndex)
+        if (queueIndex >= queue.length) queueIndex = 0;
+        playCurrent();
+      }
+    }
+    notify();
+  }
+}
+
 export function playCurrent() {
   const a = ensurePlayer();
   const item = currentTrack();
