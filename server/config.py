@@ -23,13 +23,10 @@ class Settings:
     default_download_bitrate: str
     log_level: str
     log_file: Path
-    mdns_hostname: str
     tailscale_ip: str
-    enable_mdns: bool
     guest_pin: str
     guest_token_expire_hours: int
     secure_cookies: bool
-    enable_ssl: bool
     # Optional: browser name for cookie passthrough (chrome|firefox|edge|safari)
     # Helps bypass YouTube 429 rate-limit errors by using your logged-in session
     ytdlp_browser: str  # e.g. "chrome" or "firefox"; empty = no cookies
@@ -96,12 +93,9 @@ def load_settings() -> Settings:
         default_download_bitrate=_required_env("DEFAULT_DOWNLOAD_BITRATE"),
         log_level=_required_env("LOG_LEVEL"),
         log_file=Path(_required_env("LOG_FILE")),
-        mdns_hostname=_required_env("MDNS_HOSTNAME"),
         tailscale_ip=_optional_env("TAILSCALE_IP", ""),
-        enable_mdns=_optional_bool_env("ENABLE_MDNS", False),
         guest_pin=_optional_env("GUEST_PIN", ""),
         guest_token_expire_hours=int(_optional_env("GUEST_TOKEN_EXPIRE_HOURS", "1")),
         secure_cookies=_optional_bool_env("SECURE_COOKIES", False),
-        enable_ssl=_optional_bool_env("ENABLE_SSL", False),
         ytdlp_browser=_optional_env("YTDLP_BROWSER", ""),
     )

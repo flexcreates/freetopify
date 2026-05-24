@@ -6,7 +6,6 @@ PyJWT
 bcrypt
 mutagen
 watchdog
-zeroconf
 python-multipart
 yt-dlp
 quickjs

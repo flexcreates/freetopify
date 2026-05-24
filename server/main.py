@@ -14,7 +14,6 @@ from server.auth import ensure_default_admin, router as auth_router
 from server.config import load_settings
 from server.database import init_db
 from server.downloader import Downloader
-from server.mdns import MDNSAdvertiser
 from server.router_downloader import router as downloader_router
 from server.router_library import router as library_router
 from server.router_stream import router as stream_router
@@ -87,28 +86,12 @@ async def lifespan(app: FastAPI):
     app.state.watcher = LibraryWatcher(settings.music_library_path, loop, on_fs_event)
     app.state.watcher.start()
 
-    app.state.mdns = None
-    if settings.enable_mdns and not os.getenv("PYTEST_CURRENT_TEST"):
-        app.state.mdns = MDNSAdvertiser(settings.mdns_hostname, settings.server_port)
-        try:
-            await app.state.mdns.start()
-            protocol = "https" if settings.enable_ssl else "http"
-            logging.info(f"🌐 Local network access: {protocol}://{settings.mdns_hostname}.local:{settings.server_port}")
-        except Exception:
-            logging.exception("mDNS startup failed")
-
     yield
 
     try:
         app.state.watcher.stop()
     except Exception:
         logging.exception("Watcher shutdown failed")
-
-    if app.state.mdns is not None:
-        try:
-            await app.state.mdns.stop()
-        except Exception:
-            logging.exception("mDNS shutdown failed")
 
 
 app = FastAPI(title="Freetopify Server", version="1.0.0", lifespan=lifespan)

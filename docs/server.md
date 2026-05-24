@@ -56,7 +56,6 @@ server/
 ├── watcher.py
 ├── scanner.py
 ├── websocket_manager.py
-├── mdns.py
 ├── downloader.py
 └── tests/
     └── test_api.py
