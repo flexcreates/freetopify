@@ -1,0 +1,49 @@
+name: Cross-Platform Runner Smoke
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  runner-smoke:
+    name: runner-smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Compile runner
+        run: python -m py_compile scripts/run_server.py
+
+      - name: Validate shell wrappers syntax (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          bash -n scripts/run_server_linux.sh
+          bash -n scripts/run_server_macos.sh
+
+      - name: Dry-run core runner
+        run: python scripts/run_server.py --dry-run
+
+      - name: Dry-run Linux wrapper
+        if: runner.os == 'Linux'
+        run: bash scripts/run_server_linux.sh --dry-run
+
+      - name: Dry-run macOS wrapper
+        if: runner.os == 'macOS'
+        run: bash scripts/run_server_macos.sh --dry-run
+
+      - name: Dry-run Windows wrapper
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/run_server.ps1 --dry-run

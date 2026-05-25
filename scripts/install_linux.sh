@@ -9,7 +9,8 @@ echo ""
 USER_HOME="${HOME:-/home/$(whoami)}"
 DEFAULT_MUSIC_PATH="$USER_HOME/Music/freetopify"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
 
 # ── Helper: pick first available apt package ──────────
 pick_pkg() {
@@ -235,7 +236,7 @@ echo "================================================="
 echo "   🎉 Freetopify is installed and ready! 🎉      "
 echo "================================================="
 echo ""
-echo "  Start the server:   ./scripts/run_server.sh"
+echo "  Start the server:   ./scripts/run_server_linux.sh"
 echo "  Open in browser:    http://localhost:7171"
 echo "  Admin login:        $ADMIN_USERNAME / [your password]"
 if [ -n "$YTDLP_BROWSER" ]; then

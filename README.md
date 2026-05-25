@@ -38,14 +38,34 @@ Point it at your music folders and get a beautiful browser interface to play, qu
 ```bash
 git clone https://github.com/flexcreates/freetopify
 cd freetopify
-./install.sh          # installs all system + Python deps, auto-configures .env
-./scripts/run_server.sh
+python3 freetopify.py install
+python3 freetopify.py start
 ```
 
 Open **`http://<your-machine-ip>:7171`** in any browser on your network.
 
 > The installer handles everything: system packages (ffmpeg, nodejs, sqlite3),  
 > Python venv, yt-dlp, browser cookie auto-detection, and secret key generation.
+
+### One-Command Launcher (Recommended)
+
+Use the unified launcher to avoid OS/script branching:
+
+```bash
+python3 freetopify.py            # default: start (auto-runs install first if needed)
+python3 freetopify.py install    # platform-aware install flow
+python3 freetopify.py start      # start server
+python3 freetopify.py doctor     # show detected OS/paths
+```
+
+It auto-detects Linux/macOS/Windows, logs actions to `logs/launcher.log`, and applies fallback behavior when a preferred launcher is unavailable.
+
+### Direct Script Mode (Advanced)
+
+If you prefer manual script control:
+- Linux start: `./scripts/run_server_linux.sh`
+- macOS start: `./scripts/run_server_macos.sh`
+- Windows start: `./scripts/run_server.ps1`
 
 ### Live Setup Guide
 Watch how easy it is to get Freetopify running on your machine:
@@ -76,7 +96,7 @@ The built-in downloader streams YouTube audio directly into your music library:
 Powered by `yt-dlp` with:
 - Browser cookie passthrough (`YTDLP_BROWSER`) to bypass YouTube rate limits
 - Official EJS challenge solver (`--remote-components ejs:github`) for full format access
-- Node.js runtime for signature solving (installed automatically by `install.sh`)
+- Node.js runtime for signature solving (installed automatically by platform install scripts via `python3 freetopify.py install`)
 - Auto-retry on 429 with exponential backoff
 
 ### CLI Downloader (Optional)
@@ -84,7 +104,7 @@ Powered by `yt-dlp` with:
 Use terminal helper script if you want manual downloads outside the web UI:
 
 ```bash
-./scripts/ftsmdl.sh
+python3 freetopify.py download
 ```
 
 What it does:
@@ -96,7 +116,7 @@ What it does:
 ### Safe Music Organizer (Optional)
 
 ```bash
-./scripts/organize_music_library.sh
+python3 freetopify.py organize
 ```
 
 This script is intentionally minimal and safe:

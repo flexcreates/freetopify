@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=/opt/freetopify
-ExecStart=/opt/freetopify/scripts/run_server.sh
+ExecStart=/opt/freetopify/scripts/run_server_linux.sh
 Restart=on-failure
 RestartSec=5
 User=www-data

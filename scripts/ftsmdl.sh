@@ -224,7 +224,7 @@ preflight() {
 
   if [[ ! -x "$YTDLP_PATH" ]]; then
     echo "yt-dlp not found at: $YTDLP_PATH"
-    echo "Install dependencies first (./install.sh) or set YTDLP_PATH in .env"
+    echo "Install dependencies first (python3 freetopify.py install) or set YTDLP_PATH in .env"
     exit 1
   fi
 

@@ -16,7 +16,7 @@ Server first. Server give API, stream, auth, scan, watch, download, live push.
 - `.env.example` (safe template)
 - `.gitignore`
 - `requirements.txt`
-- `install.sh`
+- `scripts/install_linux.sh`
 - `freetopify.service`
 - `TASK.md`
 - `README.md`
@@ -30,12 +30,11 @@ freetopify/
 ├── README.md
 ├── TASK.md
 ├── requirements.txt
-├── install.sh
+├── scripts/
 ├── freetopify.service
 ├── server/
 ├── web/
 ├── android/
-├── scripts/
 ├── data/
 └── logs/
 ```
@@ -171,12 +170,13 @@ python3 -c "import server.<module_name>"
 
 ## Quick Verify
 ```bash
-./scripts/run_server.sh
+./scripts/run_server_linux.sh
 curl http://127.0.0.1:7171/api/v1/system/health
 ```
 
 ## Start / Restart
-- Use `./scripts/run_server.sh` to stop any existing Freetopify `uvicorn` process for port `7171` and start a fresh one.
+- Preferred launcher: `python3 freetopify.py start` (auto-detects OS and delegates to the correct flow).
+- Use `./scripts/run_server_linux.sh` to stop any existing Freetopify `uvicorn` process for port `7171` and start a fresh one.
 - Windows PowerShell wrapper: `./scripts/run_server.ps1` (delegates to the same Python runner).
 - Systemd service `freetopify.service` uses the same launcher.
 

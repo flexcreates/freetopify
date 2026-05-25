@@ -27,16 +27,16 @@ Add stable support for Linux + macOS + Windows for setup/start scripts and runti
 
 ## Current Baseline Snapshot
 - Linux flow is stable.
-- Installer is Linux/APT-first (`install.sh`).
-- Server launcher is Linux-specific (`scripts/run_server.sh`).
+- Installer is Linux/APT-first (`scripts/install_linux.sh`).
+- Server launcher is Linux-specific (`scripts/run_server_linux.sh`).
 - Helper scripts are bash-only (`scripts/ftsmdl.sh`, `scripts/organize_music_library.sh`).
 - WebSocket URL currently needs secure-protocol hardening for HTTPS deployments.
 
 ## Linux Baseline Commands and Regression Checklist
 
 Baseline startup flow (Linux):
-1. `./install.sh`
-2. `./scripts/run_server.sh`
+1. `python3 freetopify.py install` (Linux currently routes to `scripts/install_linux.sh`)
+2. `./scripts/run_server_linux.sh`
 3. Open `http://<your-machine-ip>:7171`
 4. Optional health check: `curl -sS http://127.0.0.1:7171/api/v1/system/health`
 
@@ -46,12 +46,12 @@ Baseline download/organizer flow (Linux CLI):
 
 Mandatory Linux regression checklist (run before and after every major step):
 1. `python3 -m py_compile server/*.py server/tests/test_api.py`
-2. `bash -n scripts/run_server.sh scripts/ftsmdl.sh scripts/organize_music_library.sh`
+2. `bash -n scripts/run_server_linux.sh scripts/ftsmdl.sh scripts/organize_music_library.sh`
 3. `pytest -q server/tests/test_api.py` (only when Python deps are installed in current env)
 
 Step 1 validation run on May 25, 2026:
 1. `python3 -m py_compile server/*.py server/tests/test_api.py` -> pass
-2. `bash -n scripts/run_server.sh scripts/ftsmdl.sh scripts/organize_music_library.sh` -> pass
+2. `bash -n scripts/run_server_linux.sh scripts/ftsmdl.sh scripts/organize_music_library.sh` -> pass
 3. `pytest -q server/tests/test_api.py` -> blocked in current shell (`fastapi` missing)
 
 ---
@@ -68,7 +68,7 @@ Tasks:
 
 Linux validation gate:
 1. `python3 -m py_compile server/*.py server/tests/test_api.py`
-2. `bash -n scripts/run_server.sh scripts/ftsmdl.sh scripts/organize_music_library.sh`
+2. `bash -n scripts/run_server_linux.sh scripts/ftsmdl.sh scripts/organize_music_library.sh`
 3. `pytest -q server/tests/test_api.py` (if dependencies are installed)
 
 Completion criteria:
@@ -91,7 +91,7 @@ Tasks:
 
 Linux validation gate:
 1. `python3 scripts/run_server.py --dry-run` (add dry-run mode)
-2. `./scripts/run_server.sh` still works.
+2. `./scripts/run_server_linux.sh` still works.
 
 Completion criteria:
 - `run_server.py` exists and can run server from Linux.
@@ -99,7 +99,7 @@ Completion criteria:
 
 Validation run on May 25, 2026:
 1. `python3 scripts/run_server.py --dry-run` -> pass
-2. `./scripts/run_server.sh` -> pass (startup/shutdown verified with timeout-based smoke run)
+2. `./scripts/run_server_linux.sh` -> pass (startup/shutdown verified with timeout-based smoke run)
 
 ---
 
@@ -107,21 +107,21 @@ Validation run on May 25, 2026:
 Status: `[DONE]`
 
 Tasks:
-1. Refactor `scripts/run_server.sh` to delegate to `run_server.py`.
+1. Refactor `scripts/run_server_linux.sh` to delegate to `run_server.py`.
 2. Add `scripts/run_server.ps1` for Windows.
 3. Keep shell wrapper minimal and backward-compatible.
 
 Linux validation gate:
-1. `bash -n scripts/run_server.sh`
-2. `./scripts/run_server.sh` boots server successfully.
+1. `bash -n scripts/run_server_linux.sh`
+2. `./scripts/run_server_linux.sh` boots server successfully.
 
 Completion criteria:
 - Linux wrapper works.
 - PowerShell wrapper exists and documented.
 
 Validation run on May 25, 2026:
-1. `bash -n scripts/run_server.sh` -> pass
-2. `./scripts/run_server.sh` -> pass (startup/shutdown verified with timeout-based smoke run)
+1. `bash -n scripts/run_server_linux.sh` -> pass
+2. `./scripts/run_server_linux.sh` -> pass (startup/shutdown verified with timeout-based smoke run)
 
 ---
 
@@ -129,7 +129,7 @@ Validation run on May 25, 2026:
 Status: `[NOT DONE]`
 
 Tasks:
-1. Keep `install.sh` for Linux with minimal risk changes.
+1. Keep `scripts/install_linux.sh` for Linux with minimal risk changes.
 2. Add `install_macos.sh`:
 - Homebrew checks
 - install `python`, `ffmpeg`, `sqlite`, `node`
@@ -141,7 +141,7 @@ Tasks:
 4. Ensure all installers produce compatible `.env` keys.
 
 Linux validation gate:
-1. `bash -n install.sh install_macos.sh`
+1. `bash -n scripts/install_linux.sh scripts/install_macos.sh`
 2. `.env` contains required keys after Linux installer run.
 
 Completion criteria:
