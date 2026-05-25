@@ -116,7 +116,7 @@ Copy `.env.example` to `.env` (the installer does this automatically).
 | `ADMIN_USERNAME` | `admin` | Admin login name |
 | `ADMIN_PASSWORD` | `freetopify` | Admin password — **change this** |
 | `MUSIC_LIBRARY_PATH` | `~/Music/freetopify` | Root folder of your music library |
-| `GUEST_PIN` | _(disabled)_ | Enable guest access with this shared PIN |
+| `GUEST_PIN` | _(set in install, blank disables)_ | Shared PIN for guest access |
 | `YTDLP_BROWSER` | _(auto-detected)_ | Browser for cookie passthrough (`firefox`\|`chrome`) |
 | `DEFAULT_DOWNLOAD_FORMAT` | `mp3` | Download format: `mp3` \| `flac` \| `ogg` \| `m4a` |
 | `DEFAULT_DOWNLOAD_BITRATE` | `320k` | Audio bitrate (max quality for MP3) |
@@ -134,7 +134,6 @@ Full reference: [`.env.example`](.env.example)
 | **Auth** | PyJWT · bcrypt · rate-limited login · HttpOnly Cookies |
 | **Live updates** | WebSockets · Server-Sent Events (SSE) |
 | **Web client** | Vanilla HTML · CSS · ES Modules — no build step, no npm |
-| **Discovery** | zeroconf (mDNS/Bonjour) |
 
 ---
 
