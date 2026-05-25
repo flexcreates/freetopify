@@ -1,20 +1,31 @@
 # Freetopify — Build Task Tracker
 
 ## Status: RUNNING
-## Phase: 4
-## Last Updated: 2026-05-23
+## Phase: 6
+## Last Updated: 2026-05-25
 
 ## Phases
 - [x] Phase 1: Environment Verification
 - [x] Phase 2: Project Scaffold
 - [x] Phase 3: Server Core
 - [x] Phase 4: Web UI
-- [~] Phase 5: Flutter Android App
-- [ ] Phase 6: Integration Testing
+- [ ] Phase 5: Flutter Android App
+- [~] Phase 6: Cross-Platform Compatibility (Linux + macOS + Windows)
 - [ ] Phase 7: Final Report
 
 ## Current Task
-Web UI fully implemented and polished. The server is started via `./scripts/run_server.sh` so repeat launches replace the old Uvicorn process. Next phase is developing the Flutter Android application (Phase 5).
+Cross-platform compatibility initiative is now active.  
+Primary goal: keep Linux fully stable while adding layered support for macOS and Windows setup/startup/runtime plus Safari compatibility hardening.  
+Implementation plan is documented in `docs/cross-platform-implementation-playbook.md` and will be executed in strict order:
+- Cross-platform server runner
+- OS-specific installers
+- helper script compatibility layer
+- browser compatibility hardening
+- CI matrix and regression safety
+
+Execution rule:
+- Only implement tasks in the exact order listed in `docs/cross-platform-implementation-playbook.md`.
+- Update `[DONE]` / `[NOT DONE]` markers in that document after each completed step.
 
 ## Completed Tasks
 - Built full server module set in required order

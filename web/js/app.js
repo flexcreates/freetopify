@@ -268,19 +268,16 @@ function renderAboutView() {
             </div>
           </div>
         </article>
-
-        <aside class="about-card donate-card">
-          <div>
-            <div class="about-kicker">☕ Support</div>
-            <h2 class="donate-heading">Buy a Coffee</h2>
-            <p class="about-subtitle">If Freetopify has made your music life better, a coffee would mean the world. 💜</p>
-          </div>
-          <a class="donate-cta" href="#" onclick="return false;">☕ Add donation link</a>
-          <p class="donate-placeholder">Placeholder — swap the link above with your Ko-fi, Buy Me a Coffee, or PayPal when ready.</p>
-        </aside>
       </div>
 
       <section class="about-strip">
+        <article class="about-mini-card about-mini-donate">
+          <div class="about-mini-icon">☕</div>
+          <div class="about-stat-label">Support</div>
+          <div class="about-mini-title">Buy a Coffee</div>
+          <div class="about-mini-copy">If Freetopify has made your music life better, a coffee would mean the world.</div>
+          <a class="donate-cta" href="#" onclick="return false;">☕ Add donation link</a>
+        </article>
         ${features.map(f => `
           <article class="about-mini-card">
             <div class="about-mini-icon">${f.emoji}</div>
