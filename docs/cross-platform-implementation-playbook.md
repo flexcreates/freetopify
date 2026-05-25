@@ -32,12 +32,34 @@ Add stable support for Linux + macOS + Windows for setup/start scripts and runti
 - Helper scripts are bash-only (`scripts/ftsmdl.sh`, `scripts/organize_music_library.sh`).
 - WebSocket URL currently needs secure-protocol hardening for HTTPS deployments.
 
+## Linux Baseline Commands and Regression Checklist
+
+Baseline startup flow (Linux):
+1. `./install.sh`
+2. `./scripts/run_server.sh`
+3. Open `http://<your-machine-ip>:7171`
+4. Optional health check: `curl -sS http://127.0.0.1:7171/api/v1/system/health`
+
+Baseline download/organizer flow (Linux CLI):
+1. `./scripts/ftsmdl.sh`
+2. `./scripts/organize_music_library.sh`
+
+Mandatory Linux regression checklist (run before and after every major step):
+1. `python3 -m py_compile server/*.py server/tests/test_api.py`
+2. `bash -n scripts/run_server.sh scripts/ftsmdl.sh scripts/organize_music_library.sh`
+3. `pytest -q server/tests/test_api.py` (only when Python deps are installed in current env)
+
+Step 1 validation run on May 25, 2026:
+1. `python3 -m py_compile server/*.py server/tests/test_api.py` -> pass
+2. `bash -n scripts/run_server.sh scripts/ftsmdl.sh scripts/organize_music_library.sh` -> pass
+3. `pytest -q server/tests/test_api.py` -> blocked in current shell (`fastapi` missing)
+
 ---
 
 ## Master Task List (Strict Order)
 
 ## Step 1 — Baseline Lock and Regression Guardrails
-Status: `[NOT DONE]`
+Status: `[DONE]`
 
 Tasks:
 1. Record Linux baseline behavior and commands used for startup/download flows.
@@ -56,7 +78,7 @@ Completion criteria:
 ---
 
 ## Step 2 — Cross-Platform Server Runner Core
-Status: `[NOT DONE]`
+Status: `[DONE]`
 
 Tasks:
 1. Add `scripts/run_server.py` as the platform-neutral runner.
@@ -74,6 +96,10 @@ Linux validation gate:
 Completion criteria:
 - `run_server.py` exists and can run server from Linux.
 - Existing Linux shell workflow still valid.
+
+Validation run on May 25, 2026:
+1. `python3 scripts/run_server.py --dry-run` -> pass
+2. `./scripts/run_server.sh` -> pass (startup/shutdown verified with timeout-based smoke run)
 
 ---
 
@@ -224,8 +250,8 @@ Completion criteria:
 ---
 
 ## Progress Board
-- Step 1: `[NOT DONE]`
-- Step 2: `[NOT DONE]`
+- Step 1: `[DONE]`
+- Step 2: `[DONE]`
 - Step 3: `[NOT DONE]`
 - Step 4: `[NOT DONE]`
 - Step 5: `[NOT DONE]`
