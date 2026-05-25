@@ -22,14 +22,14 @@ Point it at your music folders and get a beautiful browser interface to play, qu
 | | |
 |---|---|
 | 🗂 **Folder-first library** | Browse your real disk structure — no import, no forced scan delay |
-| ⬇️ **Smart downloader** | YouTube → MP3/FLAC straight into your library via `yt-dlp` + visual folder picker |
-| 📜 **Download history** | Permanent local log of every downloaded track — never deleted, never synced |
+| ⬇️ **Smart downloader** | YouTube → MP3/FLAC straight into your library via `yt-dlp` + visual folder |
+| 📜 **Download history** | Permanent local log of every downloaded track |
 | 🎛 **Full playback controls** | Shuffle, repeat, queue, skip — keyboard shortcuts included |
 | 🔐 **PIN-gated guest access** | Share with friends without handing over your password |
 | 📡 **Live sync** | WebSocket pushes library updates to all connected clients in real time |
 | 📱 **Fully responsive** | Desktop · tablet · phone — same interface, perfectly scaled |
-| 🌐 **Zero cloud dependency** | Runs entirely on your LAN without HTTPS — no internet needed to play music |
-| 🎨 **Neon glassmorphism UI** | Dark-mode first, animated mesh background, vinyl disk spinner |
+| 🌐 **Zero cloud dependency** | Runs entirely on your LAN — no internet needed to play music |
+| 🎨 **Neon glassmorphism** | Dark-mode first, animated mesh background, vinyl disk spinner |
 
 ---
 
