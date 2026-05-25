@@ -116,7 +116,6 @@ Must keys:
 Optional guest config:
 - `GUEST_PIN`
 - `GUEST_TOKEN_EXPIRE_HOURS`
-- `SECURE_COOKIES`
 
 ## .env (Local)
 Copy from `.env.example`. Change `SECRET_KEY` now.

@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api/v1/system", tags=["system"])
 
 
 @router.get("/health")
-async def health() -> dict[str, str]:
+async def health(_user: str = Depends(get_current_user)) -> dict[str, str]:
     return {"status": "ok", "version": "1.0.0"}
 
 

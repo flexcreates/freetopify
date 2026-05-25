@@ -58,6 +58,23 @@ class Downloader:
         self.jobs: dict[str, DownloadJob] = {}
         self.processes: dict[str, asyncio.subprocess.Process] = {}
 
+    def _resolve_output_dir(self, output_dir: str | None, fallback: Path) -> Path:
+        if not output_dir:
+            return fallback
+
+        candidate = Path(output_dir)
+        if candidate.is_absolute():
+            resolved = candidate.resolve()
+        else:
+            resolved = (self.library_root / candidate).resolve()
+
+        root = self.library_root.resolve()
+        try:
+            resolved.relative_to(root)
+        except ValueError as exc:
+            raise ValueError("output_dir must stay within the music library") from exc
+        return resolved
+
     def _job_folder(self, job_type: str, genre: str) -> Path:
         category = self.library_root / genre
         if genre.lower() == "music":
@@ -234,16 +251,16 @@ class Downloader:
 
     async def download_single(self, url: str, genre: str, fmt: str, bitrate: str, output_dir: str | None = None) -> str:
         clean_genre = self._sanitize_component(genre or "Music")
-        target = Path(output_dir) if output_dir else self._job_folder("single", clean_genre)
+        target = self._resolve_output_dir(output_dir, self._job_folder("single", clean_genre))
         return await self._start_job(url, "single", clean_genre, fmt, bitrate, target)
 
     async def download_playlist(self, url: str, genre: str, fmt: str, bitrate: str, output_dir: str | None = None) -> str:
         clean_genre = self._sanitize_component(genre or "Music")
-        target = Path(output_dir) if output_dir else self._job_folder("playlist", clean_genre)
+        target = self._resolve_output_dir(output_dir, self._job_folder("playlist", clean_genre))
         return await self._start_job(url, "playlist", clean_genre, fmt, bitrate, target)
 
     async def download_podcast(self, url: str, output_dir: str | None = None) -> str:
-        target = Path(output_dir) if output_dir else self._job_folder("podcast", "")
+        target = self._resolve_output_dir(output_dir, self._job_folder("podcast", ""))
         return await self._start_job(url, "podcast", "Podcast", "mp3", "320k", target)
 
     def get_job_status(self, job_id: str) -> DownloadJob | None:

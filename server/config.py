@@ -26,7 +26,6 @@ class Settings:
     tailscale_ip: str
     guest_pin: str
     guest_token_expire_hours: int
-    secure_cookies: bool
     # Optional: browser name for cookie passthrough (chrome|firefox|edge|safari)
     # Helps bypass YouTube 429 rate-limit errors by using your logged-in session
     ytdlp_browser: str  # e.g. "chrome" or "firefox"; empty = no cookies
@@ -65,13 +64,6 @@ def _optional_env(key: str, default: str = "") -> str:
     return value
 
 
-def _optional_bool_env(key: str, default: bool) -> bool:
-    value = os.getenv(key)
-    if value is None:
-        return default
-    return value.strip().lower() in {"1", "true", "yes", "on"}
-
-
 def load_settings() -> Settings:
     load_dotenv()
     missing = [key for key in REQUIRED_KEYS if os.getenv(key) is None]
@@ -96,7 +88,6 @@ def load_settings() -> Settings:
         tailscale_ip=_optional_env("TAILSCALE_IP", ""),
         guest_pin=_optional_env("GUEST_PIN", ""),
         guest_token_expire_hours=int(_optional_env("GUEST_TOKEN_EXPIRE_HOURS", "1")),
-        secure_cookies=_optional_bool_env("SECURE_COOKIES", False),
         ytdlp_browser=_optional_env("YTDLP_BROWSER", ""),
         max_connections=int(_optional_env("MAX_CONNECTIONS", "0")),
     )

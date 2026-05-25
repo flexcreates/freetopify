@@ -210,7 +210,7 @@ export function renderDownloads(mount) {
       const isSelected = selectedFolders.has(f.path);
       const trackLabel = f.track_count ? `${f.track_count} track${f.track_count !== 1 ? 's' : ''}` : 'empty';
       return `
-        <button class="dl-folder-card${isSelected ? ' selected' : ''}" data-path="${esc(f.path)}" data-abs="${esc(f.absolute_path || '')}">
+        <button class="dl-folder-card${isSelected ? ' selected' : ''}" data-path="${esc(f.path)}">
           <span class="dl-folder-icon">◈</span>
           <span class="dl-folder-card-name">${esc(f.name)}</span>
           <span class="dl-folder-card-meta">${esc(trackLabel)}</span>
@@ -274,7 +274,7 @@ export function renderDownloads(mount) {
         genre: folder.name,
         format: chosenFormat,
         bitrate: '320k',
-        output_dir: folder.absolute_path || null,
+        output_dir: folder.path || null,
       };
       try {
         const res = await apiPost('/api/v1/download/start', body);

@@ -34,7 +34,7 @@ web/
 │   └── app.css         # All component styles + 5-tier responsive breakpoints
 ├── js/
 │   ├── api.js          # Fetch helpers and API wrappers
-│   ├── auth.js         # Login/logout, token storage, role handling
+│   ├── auth.js         # Login/logout, cookie handling, role handling
 │   ├── player.js       # Audio element, queue, playback state (singleton)
 │   ├── library.js      # Folder/track rendering, context menu
 │   ├── downloader.js   # Visual folder-picker, multi-select, parallel job dispatch, SSE logs, history

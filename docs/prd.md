@@ -62,7 +62,6 @@ Required keys (TAILSCALE_IP optional):
 - `TAILSCALE_IP`
 - `GUEST_PIN` (optional)
 - `GUEST_TOKEN_EXPIRE_HOURS` (optional)
-- `SECURE_COOKIES` (optional)
 
 Real values in `.env` (not commit).
 Template values in `.env.example` (commit).

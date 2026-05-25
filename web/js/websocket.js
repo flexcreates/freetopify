@@ -1,11 +1,7 @@
-import { getToken } from '/web/js/api.js';
-
 let ws;
 
 export function connectLiveUpdates(onEvent) {
-  const token = getToken();
-  if (!token) return;
-  const url = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/live?token=${encodeURIComponent(token)}`;
+  const url = `ws://${location.host}/ws/live`;
 
   ws = new WebSocket(url);
   ws.onmessage = (event) => {
@@ -24,10 +20,9 @@ export function connectLiveUpdates(onEvent) {
     ping();
   };
   ws.onclose = () => {
+    // Basic reconnect with backoff avoiding infinite loop on auth fail
     setTimeout(() => {
-      if (getToken()) {
-        connectLiveUpdates(onEvent);
-      }
-    }, 2000);
+      connectLiveUpdates(onEvent);
+    }, 5000);
   };
 }

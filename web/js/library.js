@@ -162,7 +162,7 @@ function parentPath(path) {
     }, 10);
   }
 
-  // use `apiPost` from /web/js/api.js to ensure Authorization header
+  // use `apiPost` from /web/js/api.js to ensure credentials are sent
 
   
 export async function renderLibrary(mount, path = '', isBack = false) {

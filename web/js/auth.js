@@ -1,14 +1,14 @@
-import { apiPost, clearToken, setToken } from '/web/js/api.js';
+import { apiPost, apiGet, clearToken } from '/web/js/api.js';
 
 export async function login(username, password) {
   const result = await apiPost('/auth/login', { username, password });
-  setToken(result.access_token);
+  await apiGet('/auth/me'); // Confirm cookie is registered
   return result;
 }
 
 export async function guestJoin(name, pin) {
   const result = await apiPost('/auth/guest', { name, pin });
-  setToken(result.access_token);
+  await apiGet('/auth/me'); // Confirm cookie is registered
   return result;
 }
 

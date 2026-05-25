@@ -1,4 +1,4 @@
-import { apiGet, clearToken, getToken } from '/web/js/api.js';
+import { apiGet, clearToken } from '/web/js/api.js';
 import { logout } from '/web/js/auth.js';
 import { renderDownloads } from '/web/js/downloader.js';
 import { getCurrentLibraryPath, renderLibrary, goBackOne, hasHistory, showTrackContextMenu } from '/web/js/library.js';
@@ -366,11 +366,6 @@ function renderSettings() {
 }
 
 async function renderRoute() {
-  if (!getToken()) {
-    window.location.href = '/web/login.html';
-    return;
-  }
-
   try {
     await apiGet('/auth/me');
   } catch (_) {

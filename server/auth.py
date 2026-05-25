@@ -111,47 +111,12 @@ async def ensure_default_admin(database_path: str, username: str, password: str)
         await db.commit()
 
 
-async def get_current_user(
-    request: Request,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-) -> str:
-    token = credentials.credentials
-    settings = request.app.state.settings
-    payload = decode_access_token(settings.secret_key, token)
-    subject = payload.get("sub")
-    # Disallow guest tokens for protected HTTP endpoints
-    if payload.get("role") == "guest":
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Guest access not permitted")
-    if not subject:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
-    # Verify the user still exists in the database.
-    # This ensures that changing credentials in .env + restarting immediately
-    # invalidates any previously issued tokens.
-    async with aiosqlite.connect(str(settings.database_path)) as db:
-        cursor = await db.execute("SELECT 1 FROM users WHERE username = ?", (subject,))
-        if not await cursor.fetchone():
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session invalidated — please log in again")
-    return str(subject)
+async def get_current_user(request: Request) -> str:
+    return await get_current_user_from_request_allow_guest(request, allow_guest=False)
 
 
-async def get_current_user_allow_guest(
-    request: Request,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-) -> str:
-    token = credentials.credentials
-    settings = request.app.state.settings
-    payload = decode_access_token(settings.secret_key, token)
-    subject = payload.get("sub")
-    if not subject:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
-    # Guest tokens carry role=guest and a sub like "guest:name" — no DB row exists for them.
-    # Admin tokens must have a matching DB row.
-    if payload.get("role") != "guest":
-        async with aiosqlite.connect(str(settings.database_path)) as db:
-            cursor = await db.execute("SELECT 1 FROM users WHERE username = ?", (subject,))
-            if not await cursor.fetchone():
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session invalidated — please log in again")
-    return str(subject)
+async def get_current_user_allow_guest(request: Request) -> str:
+    return await get_current_user_from_request_allow_guest(request, allow_guest=True)
 
 
 async def get_current_user_from_request(request: Request, token_query: str | None = None) -> str:
@@ -254,7 +219,7 @@ async def guest_join(body: LoginRequest | dict, request: Request) -> Response:
     token, expires_in = create_access_token(settings.secret_key, subject, ttl, extra_claims={"role": "guest"})
     logger.info("Guest token issued for name=%s from=%s ttl_hours=%s", name, client, ttl)
     response = JSONResponse(LoginResponse(access_token=token, expires_in=expires_in).model_dump())
-    cookie_kwargs = dict(
+    response.set_cookie(
         key="freetopify_token",
         value=token,
         max_age=expires_in,
@@ -262,9 +227,6 @@ async def guest_join(body: LoginRequest | dict, request: Request) -> Response:
         samesite="lax",
         httponly=True,
     )
-    if getattr(settings, "secure_cookies", False):
-        cookie_kwargs["secure"] = True
-    response.set_cookie(**cookie_kwargs)
     return response
 
 

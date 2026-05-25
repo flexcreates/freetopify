@@ -1,4 +1,4 @@
-import { apiGet, apiPost, getToken } from '/web/js/api.js';
+import { apiGet, apiPost } from '/web/js/api.js';
 
 function createInput(labelText, name, value = '') {
   const wrap = document.createElement('div');
@@ -179,11 +179,10 @@ export async function openMetaEditor(path) {
     try {
       const formData = new FormData();
       formData.append('file', f);
-      const token = getToken();
       const res = await fetch(`/api/v1/library/cover?path=${encodeURIComponent(path)}`, {
         method: 'POST',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         body: formData,
+        credentials: 'same-origin'
       });
       if (!res.ok) throw new Error(await res.text());
       coverImg.src = `/thumbnail/${encodeURIComponent(path)}?t=${Date.now()}`;

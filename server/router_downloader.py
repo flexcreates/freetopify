@@ -35,6 +35,8 @@ async def start_download(body: DownloadStartRequest, request: Request, _user: st
             job_id = await downloader.download_playlist(body.url, body.genre, body.format, body.bitrate, output_dir=body.output_dir)
         else:
             job_id = await downloader.download_playlist(body.url, body.genre, body.format, body.bitrate, output_dir=body.output_dir)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=429, detail=str(exc)) from exc
 

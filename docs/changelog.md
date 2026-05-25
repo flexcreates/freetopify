@@ -66,7 +66,7 @@ This file records notable changes made to the Freetopify project as work progres
 ### Configuration (`server/config.py`, `.env`, `.env.example`)
 - Added `YTDLP_BROWSER` optional setting (empty = no cookie passthrough)
 - Reorganised `.env.example` into 8 labelled sections with inline comments
-- Added missing variables: `GUEST_PIN`, `GUEST_TOKEN_EXPIRE_HOURS`, `SECURE_COOKIES`, `MAX_CONNECTIONS`, `PARTY_BUFFER_MS`
+- Added missing variables: `GUEST_PIN`, `GUEST_TOKEN_EXPIRE_HOURS`, `MAX_CONNECTIONS`, `PARTY_BUFFER_MS`
 
 ### Dependencies (`requirements.txt`)
 - Added `quickjs` — Python JS runtime, fallback for yt-dlp when Node.js unavailable
@@ -233,8 +233,8 @@ Notes and conventions
 
 2026-05-24 — Add guest token TTL and secure cookie option; generate SECRET_KEY
 
-- Config: added `GUEST_TOKEN_EXPIRE_HOURS` (default 1 hour) and `SECURE_COOKIES` (default false) environment variables; `server/config.py` now loads these values.
-- Auth: guest tokens now use `GUEST_TOKEN_EXPIRE_HOURS` when issuing tokens; cookie `Secure` flag is set when `SECURE_COOKIES=true`.
+- Config: added `GUEST_TOKEN_EXPIRE_HOURS` (default 1 hour) environment variable; `server/config.py` now loads it.
+- Auth: guest tokens now use `GUEST_TOKEN_EXPIRE_HOURS` when issuing tokens.
 - Env: `.env` updated with a generated `SECRET_KEY` and the new variables.
 
 ---
@@ -260,3 +260,11 @@ Notes and conventions
 - UI: added an About route in the web app with developer credits, official GitHub/Instagram links, project start date, and a live elapsed timer.
 - UI: included a donation / buy-a-coffee placeholder card matching the existing theme.
 - Docs: updated `README.md` and `docs/web.md` to mention the About page.
+
+2026-05-25 — Finalisation: LAN-only Cookie Auth and System Stability
+- Auth: Migrated authentication entirely to `HttpOnly` `same-origin` cookies to enhance LAN-only security and performance.
+- Auth: Removed token storage inside frontend `localStorage` and `Authorization` HTTP header fallbacks.
+- Security: Implemented strict sandboxing in yt-dlp to restrict download destinations from escaping `MUSIC_LIBRARY_PATH`.
+- Security: Protected metadata editing and health check endpoints to require admin authentication.
+- Cleanup: Removed dead references to HTTPS and `SECURE_COOKIES`, emphasizing the project's offline/LAN design.
+- Bugfix: Corrected file serving and WebSocket syntax errors.

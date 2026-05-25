@@ -164,9 +164,6 @@ ADMIN_PASSWORD=$ADMIN_PASSWORD
 # JWT token lifetime for admin sessions (hours)
 TOKEN_EXPIRE_HOURS=168
 
-# Set to true when running behind HTTPS / reverse proxy
-SECURE_COOKIES=false
-
 
 # ── Paths ─────────────────────────────────────
 # Where your music library lives on disk

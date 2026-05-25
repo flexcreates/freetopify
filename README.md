@@ -28,7 +28,7 @@ Point it at your music folders and get a beautiful browser interface to play, qu
 | 🔐 **PIN-gated guest access** | Share with friends without handing over your password |
 | 📡 **Live sync** | WebSocket pushes library updates to all connected clients in real time |
 | 📱 **Fully responsive** | Desktop · tablet · phone — same interface, perfectly scaled |
-| 🌐 **Zero cloud dependency** | Runs entirely on your LAN — no internet needed to play music |
+| 🌐 **Zero cloud dependency** | Runs entirely on your LAN without HTTPS — no internet needed to play music |
 | 🎨 **Neon glassmorphism UI** | Dark-mode first, animated mesh background, vinyl disk spinner |
 
 ---
@@ -105,7 +105,7 @@ Full reference: [`.env.example`](.env.example)
 |---|---|
 | **Server** | Python 3.11+ · FastAPI · uvicorn · aiosqlite |
 | **Media** | mutagen · yt-dlp · ffmpeg · Node.js (EJS solver) |
-| **Auth** | PyJWT · bcrypt · rate-limited login |
+| **Auth** | PyJWT · bcrypt · rate-limited login · HttpOnly Cookies |
 | **Live updates** | WebSockets · Server-Sent Events (SSE) |
 | **Web client** | Vanilla HTML · CSS · ES Modules — no build step, no npm |
 | **Discovery** | zeroconf (mDNS/Bonjour) |

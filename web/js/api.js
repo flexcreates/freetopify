@@ -1,24 +1,12 @@
-const tokenKey = 'freetopify_token';
-
-export function getToken() {
-  return localStorage.getItem(tokenKey) || '';
-}
-
-export function setToken(token) {
-  localStorage.setItem(tokenKey, token);
-}
-
 export function clearToken() {
-  localStorage.removeItem(tokenKey);
+  localStorage.removeItem('freetopify_token'); // Kept for cleanup of old clients
 }
 
 async function request(path, options = {}) {
   const headers = new Headers(options.headers || {});
-  const token = getToken();
-  if (token) headers.set('Authorization', `Bearer ${token}`);
   if (!headers.has('Content-Type') && options.body) headers.set('Content-Type', 'application/json');
 
-  const response = await fetch(path, { ...options, headers });
+  const response = await fetch(path, { ...options, headers, credentials: 'same-origin' });
   if (response.status === 401) {
     clearToken();
     throw new Error('Unauthorized');

@@ -55,7 +55,6 @@ async def browse(
                 {
                     "name": child.name,
                     "path": rel,
-                    "absolute_path": str(child),
                     "type": "folder",
                     "child_count": subfolders,
                     "track_count": tracks,
@@ -168,7 +167,6 @@ async def track(request: Request, track_id: str, _user: str = Depends(get_curren
     return {
         "id": row[0],
         "relative_path": row[1],
-        "absolute_path": row[2],
         "filename": row[3],
         "title": row[4],
         "artist": row[5],
@@ -405,8 +403,8 @@ async def upload_cover(request: Request, path: str = Query(default=''), file: Up
     """Upload and embed cover art into a track. Form: file, path=relative/path/to/file.mp3"""
     if not path:
         raise HTTPException(status_code=400, detail='missing path')
-    # authenticate: accept token via query or Authorization header
-    await get_current_user_from_request_allow_guest(request, token_query=token, allow_guest=True)
+    # writable metadata endpoints are admin-only
+    await get_current_user_from_request(request, token_query=token)
     settings = request.app.state.settings
     target = safe_path(settings.music_library_path, path)
     if not target.exists() or not target.is_file():

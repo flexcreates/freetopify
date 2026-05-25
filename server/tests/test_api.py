@@ -21,6 +21,7 @@ def _env_setup(tmp_path):
     os.environ["TOKEN_EXPIRE_HOURS"] = "12"
     os.environ["ADMIN_USERNAME"] = "admin"
     os.environ["ADMIN_PASSWORD"] = "freetopify"
+    os.environ["GUEST_PIN"] = "1234"
     os.environ["DATABASE_PATH"] = str(data / "freetopify.db")
     os.environ["YTDLP_PATH"] = "yt-dlp"
     os.environ["VENV_PATH"] = "./venv"
@@ -50,7 +51,8 @@ def test_health(tmp_path):
     from server.main import app
 
     with TestClient(app) as client:
-        res = client.get("/api/v1/system/health")
+        token = _login(client)
+        res = client.get("/api/v1/system/health", headers={"Authorization": f"Bearer {token}"})
         assert res.status_code == 200
         assert res.json()["status"] == "ok"
 
@@ -123,9 +125,43 @@ def test_websocket_requires_valid_token(tmp_path):
     from server.main import app
 
     with TestClient(app) as client:
-        token = _login(client)
-        with client.websocket_connect(f"/ws/live?token={token}") as ws:
+        _login(client)
+        with client.websocket_connect("/ws/live") as ws:
             ws.send_text("ping")
+
+
+def test_download_output_dir_must_stay_inside_library(tmp_path):
+    _env_setup(tmp_path)
+    from server.main import app
+
+    with TestClient(app) as client:
+        token = _login(client)
+        auth = {"Authorization": f"Bearer {token}"}
+        res = client.post(
+            "/api/v1/download/start",
+            headers=auth,
+            json={
+                "url": "https://example.com/watch?v=test",
+                "type": "single",
+                "genre": "Music",
+                "format": "mp3",
+                "bitrate": "320k",
+                "output_dir": "/tmp/escape",
+            },
+        )
+        assert res.status_code == 400
+
+
+def test_guest_cannot_modify_library(tmp_path):
+    _env_setup(tmp_path)
+    from server.main import app
+
+    with TestClient(app) as client:
+        res = client.post("/auth/guest", json={"name": "guest", "pin": "1234"})
+        assert res.status_code == 200
+
+        blocked = client.post("/api/v1/library/mkdir", json={"path": "new-folder"})
+        assert blocked.status_code in (401, 403)
 
 
 def test_login_rate_limit(tmp_path):
