@@ -33,6 +33,14 @@ Point it at your music folders and get a beautiful browser interface to play, qu
 
 ---
 
+## Start Here (Choose Your OS)
+
+- Linux guide: [`docs/setup-linux.md`](docs/setup-linux.md)
+- macOS guide: [`docs/setup-macos.md`](docs/setup-macos.md)
+- Windows guide: [`docs/setup-windows.md`](docs/setup-windows.md)
+
+If you just want the shortest path, use the quick start below.
+
 ## Quick Start
 
 ```bash
@@ -40,6 +48,12 @@ git clone https://github.com/flexcreates/freetopify
 cd freetopify
 python3 freetopify.py install
 python3 freetopify.py start
+```
+
+Windows (PowerShell):
+```powershell
+python freetopify.py install
+python freetopify.py start
 ```
 
 Open **`http://<your-machine-ip>:7171`** in any browser on your network.
@@ -59,6 +73,10 @@ python3 freetopify.py doctor     # show detected OS/paths
 ```
 
 It auto-detects Linux/macOS/Windows, logs actions to `logs/launcher.log`, and applies fallback behavior when a preferred launcher is unavailable.
+
+If install has already been done once, you can start directly with:
+- Linux/macOS: `python3 freetopify.py`
+- Windows: `python freetopify.py`
 
 ### Direct Script Mode (Advanced)
 
@@ -101,10 +119,10 @@ Powered by `yt-dlp` with:
 
 ### CLI Downloader (Optional)
 
-Use terminal helper script if you want manual downloads outside the web UI:
+Use the dedicated media CLI orchestrator:
 
 ```bash
-python3 freetopify.py download
+python3 freetopify_media.py download
 ```
 
 What it does:
@@ -116,8 +134,10 @@ What it does:
 ### Safe Music Organizer (Optional)
 
 ```bash
-python3 freetopify.py organize
+python3 freetopify_media.py organize
 ```
+
+You can still use `python3 freetopify.py download|organize`; it delegates to `freetopify_media.py`.
 
 This script is intentionally minimal and safe:
 - Uses `.env` music root by default
@@ -161,6 +181,9 @@ Full reference: [`.env.example`](.env.example)
 
 | File | Contents |
 |---|---|
+| [`docs/setup-linux.md`](docs/setup-linux.md) | Linux install/start/update commands |
+| [`docs/setup-macos.md`](docs/setup-macos.md) | macOS install/start/update commands |
+| [`docs/setup-windows.md`](docs/setup-windows.md) | Windows install/start/update commands |
 | [`docs/server.md`](docs/server.md) | Server architecture, API reference, watcher rules |
 | [`docs/web.md`](docs/web.md) | Web client design system, module map, test checklist |
 | [`docs/prd.md`](docs/prd.md) | Product requirements |
