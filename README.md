@@ -79,6 +79,32 @@ Powered by `yt-dlp` with:
 - Node.js runtime for signature solving (installed automatically by `install.sh`)
 - Auto-retry on 429 with exponential backoff
 
+### CLI Downloader (Optional)
+
+Use terminal helper script if you want manual downloads outside the web UI:
+
+```bash
+./scripts/ftsmdl.sh
+```
+
+What it does:
+- Reads default music path from `.env` (`MUSIC_LIBRARY_PATH`)
+- Lets you pick existing folder(s) or create a new folder path
+- Asks for YouTube URL, download type, and format (`mp3`/`flac`)
+- Downloads with server-aligned yt-dlp settings and logs to `~/Scripts/logs/`
+
+### Safe Music Organizer (Optional)
+
+```bash
+./scripts/organize_music_library.sh
+```
+
+This script is intentionally minimal and safe:
+- Uses `.env` music root by default
+- Moves loose audio files into `Music/Singles`
+- Moves playlist files into `_playlists`
+- Avoids artist-per-folder explosion
+
 ---
 
 ## Configuration

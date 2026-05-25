@@ -5,6 +5,19 @@ This file records notable changes made to the Freetopify project as work progres
 
 ## 2026-05-25 — Downloader Overhaul, Player Stability, Resource Optimisation & YouTube Fix
 
+## 2026-05-25 — CLI Script Sync With Web Downloader
+
+- Reworked `scripts/ftsmdl.sh` into a wizard flow aligned with server downloader behavior.
+- Script now reads defaults from project `.env` (notably `MUSIC_LIBRARY_PATH`, `YTDLP_PATH`, `YTDLP_BROWSER`).
+- Added folder selection/create flow before URL input, plus explicit `mp3` / `flac` prompt.
+- Output templates now match server logic (`single`, `playlist`, `podcast`, `mix` layouts).
+- Simplified `scripts/organize_music_library.sh` to a minimal safe mode:
+  - no artist fan-out
+  - moves loose audio into `Music/Singles`
+  - moves playlist files into `_playlists`
+- Removed `scripts/fix_music_tree.sh` fallback script for cleaner script management.
+- Updated root `README.md` with simple usage instructions for both helper scripts.
+
 ### YouTube Downloader — Full Fix (`server/downloader.py`)
 - **Fixed YouTube JS signature solving** — the root cause of all download failures
   - Added `--remote-components ejs:github`: downloads yt-dlp's official EJS challenge solver (cached after first use)
@@ -193,7 +206,7 @@ Full 5-tier responsive system replacing the old 2-tier system:
 - Database: SQLite via `aiosqlite`, initialization in `server/database.py` and default admin ensured by `server/auth.py`.
 - Web UI: static site served from `web/` (index.html, login.html, CSS and JS assets under `web/css` and `web/js`).
 - Tests: basic API tests present at `server/tests/test_api.py`.
-- Scripts & utilities: `install.sh`, `freetopify.service`, `scripts/` (helper scripts like `fix_music_tree.sh`, `nvmsdl.sh`).
+- Scripts & utilities: `install.sh`, `freetopify.service`, `scripts/` (helper scripts like `organize_music_library.sh`, `ftsmdl.sh`).
 - Data: `data/` folder with `meta_backups/` containing backup files.
 - Docs: `docs/` contains `prd.md`, `server.md`, `web.md`, `android.md` (planning and spec docs).
 - Requirements: `requirements.txt` lists runtime dependencies (FastAPI, uvicorn, aiosqlite, yt-dlp, mutagen, watchdog, zeroconf, PyJWT, bcrypt, etc.).
