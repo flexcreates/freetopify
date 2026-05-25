@@ -104,7 +104,7 @@ Validation run on May 25, 2026:
 ---
 
 ## Step 3 — Wrapper Scripts by OS
-Status: `[NOT DONE]`
+Status: `[DONE]`
 
 Tasks:
 1. Refactor `scripts/run_server.sh` to delegate to `run_server.py`.
@@ -118,6 +118,10 @@ Linux validation gate:
 Completion criteria:
 - Linux wrapper works.
 - PowerShell wrapper exists and documented.
+
+Validation run on May 25, 2026:
+1. `bash -n scripts/run_server.sh` -> pass
+2. `./scripts/run_server.sh` -> pass (startup/shutdown verified with timeout-based smoke run)
 
 ---
 
@@ -252,7 +256,7 @@ Completion criteria:
 ## Progress Board
 - Step 1: `[DONE]`
 - Step 2: `[DONE]`
-- Step 3: `[NOT DONE]`
+- Step 3: `[DONE]`
 - Step 4: `[NOT DONE]`
 - Step 5: `[NOT DONE]`
 - Step 6: `[NOT DONE]`
