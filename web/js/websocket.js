@@ -1,7 +1,8 @@
 let ws;
 
 export function connectLiveUpdates(onEvent) {
-  const url = `ws://${location.host}/ws/live`;
+  const wsProtocol = location.protocol === 'https:' ? 'wss' : 'ws';
+  const url = `${wsProtocol}://${location.host}/ws/live`;
 
   ws = new WebSocket(url);
   ws.onmessage = (event) => {
@@ -24,5 +25,8 @@ export function connectLiveUpdates(onEvent) {
     setTimeout(() => {
       connectLiveUpdates(onEvent);
     }, 5000);
+  };
+  ws.onerror = () => {
+    // Keep errors non-fatal; onclose handles reconnect flow.
   };
 }

@@ -9,7 +9,7 @@ Server first. Server give API, stream, auth, scan, watch, download, live push.
 - `sqlite3`
 - `yt-dlp`
 - `ffmpeg` (good for downloader art/embed)
-- Linux machine
+- Linux/macOS/Windows machine
 
 ## Root Files We Make/Update
 - `.env` (local only, secret)
@@ -170,15 +170,21 @@ python3 -c "import server.<module_name>"
 
 ## Quick Verify
 ```bash
-./scripts/run_server_linux.sh
+python3 freetopify.py start
 curl http://127.0.0.1:7171/api/v1/system/health
 ```
 
 ## Start / Restart
 - Preferred launcher: `python3 freetopify.py start` (auto-detects OS and delegates to the correct flow).
-- Use `./scripts/run_server_linux.sh` to stop any existing Freetopify `uvicorn` process for port `7171` and start a fresh one.
-- Windows PowerShell wrapper: `./scripts/run_server.ps1` (delegates to the same Python runner).
+- Linux direct wrapper: `./scripts/run_server_linux.sh`.
+- macOS direct wrapper: `./scripts/run_server_macos.sh`.
+- Windows direct wrapper: `./scripts/run_server.ps1`.
 - Systemd service `freetopify.service` uses the same launcher.
+
+## Install by OS
+- Linux: `python3 freetopify.py install` (routes to `scripts/install_linux.sh`)
+- macOS: `python3 freetopify.py install` (routes to `scripts/install_macos.sh`)
+- Windows: `python freetopify.py install` (routes to `scripts/install_windows.ps1`)
 
 ## Test List (Must Pass)
 - health 200

@@ -64,6 +64,11 @@ def _optional_env(key: str, default: str = "") -> str:
     return value
 
 
+def _resolve_path(raw: str) -> Path:
+    # Expand user-home tokens across OSes, then normalize to an absolute path.
+    return Path(raw).expanduser().resolve()
+
+
 def load_settings() -> Settings:
     load_dotenv()
     missing = [key for key in REQUIRED_KEYS if os.getenv(key) is None]
@@ -71,20 +76,20 @@ def load_settings() -> Settings:
         raise RuntimeError(f"Missing required env vars: {', '.join(missing)}")
 
     return Settings(
-        music_library_path=Path(_required_env("MUSIC_LIBRARY_PATH")).resolve(),
+        music_library_path=_resolve_path(_required_env("MUSIC_LIBRARY_PATH")),
         server_port=int(_required_env("SERVER_PORT")),
         server_host=_required_env("SERVER_HOST"),
         secret_key=_required_env("SECRET_KEY"),
         token_expire_hours=int(_required_env("TOKEN_EXPIRE_HOURS")),
         admin_username=_required_env("ADMIN_USERNAME"),
         admin_password=_required_env("ADMIN_PASSWORD"),
-        database_path=Path(_required_env("DATABASE_PATH")),
+        database_path=_resolve_path(_required_env("DATABASE_PATH")),
         ytdlp_path=_required_env("YTDLP_PATH"),
-        venv_path=Path(_required_env("VENV_PATH")),
+        venv_path=_resolve_path(_required_env("VENV_PATH")),
         default_download_format=_required_env("DEFAULT_DOWNLOAD_FORMAT"),
         default_download_bitrate=_required_env("DEFAULT_DOWNLOAD_BITRATE"),
         log_level=_required_env("LOG_LEVEL"),
-        log_file=Path(_required_env("LOG_FILE")),
+        log_file=_resolve_path(_required_env("LOG_FILE")),
         tailscale_ip=_optional_env("TAILSCALE_IP", ""),
         guest_pin=_optional_env("GUEST_PIN", ""),
         guest_token_expire_hours=int(_optional_env("GUEST_TOKEN_EXPIRE_HOURS", "1")),

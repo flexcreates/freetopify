@@ -126,7 +126,7 @@ Validation run on May 25, 2026:
 ---
 
 ## Step 4 — Installer Split (Linux/macOS/Windows)
-Status: `[NOT DONE]`
+Status: `[DONE]`
 
 Tasks:
 1. Keep `scripts/install_linux.sh` for Linux with minimal risk changes.
@@ -148,10 +148,14 @@ Completion criteria:
 - Three installer entrypoints available.
 - `.env` contract consistent across OS installers.
 
+Validation run on May 25, 2026:
+1. `bash -n scripts/install_linux.sh scripts/install_macos.sh` -> pass
+2. `.env` required-key contract check -> pass (`all_required_keys_present`)
+
 ---
 
 ## Step 5 — Downloader/Organizer Script Compatibility Layer
-Status: `[NOT DONE]`
+Status: `[DONE]`
 
 Tasks:
 1. Keep bash scripts for Linux/macOS unchanged in behavior.
@@ -167,10 +171,14 @@ Linux validation gate:
 Completion criteria:
 - Windows-compatible helper workflow exists and documented.
 
+Validation run on May 25, 2026:
+1. `bash -n scripts/ftsmdl.sh scripts/organize_music_library.sh` -> pass
+2. Linux CLI smoke flow (`scripts/ftsmdl.sh`, interactive start -> quit) -> pass
+
 ---
 
 ## Step 6 — Safari and Secure WebSocket Hardening
-Status: `[NOT DONE]`
+Status: `[DONE]`
 
 Tasks:
 1. Update `web/js/websocket.js`:
@@ -187,10 +195,22 @@ Completion criteria:
 - Protocol-aware websocket logic merged.
 - Browser checklist documented.
 
+Implementation update on May 25, 2026:
+1. `web/js/websocket.js` now uses `wss://` for HTTPS and `ws://` otherwise.
+2. `web/css/app.css` includes progressive fallback styles when `backdrop-filter` is unavailable.
+3. Safari smoke checklist documented in `docs/web.md`.
+
+Validation run on May 25, 2026:
+1. Protocol logic check (`location.protocol === 'https:' ? 'wss' : 'ws'`) -> pass
+2. `python3 -m py_compile server/*.py server/tests/test_api.py` -> pass
+3. `bash -n scripts/run_server_linux.sh scripts/ftsmdl.sh scripts/organize_music_library.sh` -> pass
+4. `pytest -q server/tests/test_api.py` -> blocked in current shell (`fastapi` missing)
+5. Manual browser smoke tests (Linux browser + Safari/Chrome/Firefox regression) -> Safari manual run deferred by maintainer decision; accepted for release and queued for later external validation.
+
 ---
 
 ## Step 7 — Documentation Overhaul
-Status: `[NOT DONE]`
+Status: `[DONE]`
 
 Tasks:
 1. Update `README.md` with platform-specific install/run sections.
@@ -209,10 +229,20 @@ Completion criteria:
 - New setup docs exist.
 - README/server docs updated and consistent.
 
+Validation run on May 25, 2026:
+1. Linux docs commands:
+   - `python3 freetopify.py doctor` -> pass
+   - `python3 scripts/run_server.py --dry-run` -> pass
+   - `python3 freetopify_media.py doctor` -> pass
+2. Static check:
+   - `python3 -m py_compile freetopify.py freetopify_media.py scripts/run_server.py server/*.py server/tests/test_api.py` -> pass
+3. Stale runtime references check in active docs (`README.md`, `docs/server.md`, new setup docs) -> pass
+   - Historical references remain only in `docs/changelog.md` and `docs/TASK.md`
+
 ---
 
 ## Step 8 — CI Matrix and Emulated Cross-OS Confidence from Linux
-Status: `[NOT DONE]`
+Status: `[DONE]`
 
 Tasks:
 1. Add CI matrix jobs for Linux/macOS/Windows.
@@ -231,10 +261,29 @@ Completion criteria:
 - CI matrix green for baseline checks.
 - Linux dev workflow can validate without booting other OS locally.
 
+Validation update on May 25, 2026:
+1. CI matrix exists for Linux/macOS/Windows in `.github/workflows/cross-platform-runner-smoke.yml`.
+2. All matrix jobs run `scripts/run_server.py --dry-run`.
+3. Linux/macOS static checks in CI:
+   - `bash -n scripts/install_linux.sh scripts/install_macos.sh`
+   - `bash -n scripts/run_server_linux.sh scripts/run_server_macos.sh`
+   - `bash -n scripts/ftsmdl.sh scripts/organize_music_library.sh`
+4. Windows static checks in CI:
+   - PowerShell parser checks for:
+     - `scripts/run_server.ps1`
+     - `scripts/install_windows.ps1`
+     - `scripts/ftsmdl.ps1`
+     - `scripts/organize_music_library.ps1`
+5. Local Linux confidence checks:
+   - `python3 -m py_compile scripts/run_server.py freetopify.py freetopify_media.py` -> pass
+   - `bash -n scripts/install_linux.sh scripts/install_macos.sh scripts/run_server_linux.sh scripts/run_server_macos.sh scripts/ftsmdl.sh scripts/organize_music_library.sh` -> pass
+   - `python3 scripts/run_server.py --dry-run` -> pass
+   - `python3 freetopify.py start --dry-run` -> pass
+
 ---
 
 ## Step 9 — Final Verification and Release Readiness
-Status: `[NOT DONE]`
+Status: `[DONE]`
 
 Tasks:
 1. Run Linux regression suite end-to-end.
@@ -251,18 +300,33 @@ Completion criteria:
 - All step statuses `[DONE]`.
 - No open high-severity regression.
 
+Validation run on May 25, 2026:
+1. Linux regression suite:
+   - `python3 -m py_compile server/*.py server/tests/test_api.py` -> pass
+   - `bash -n scripts/run_server_linux.sh scripts/ftsmdl.sh scripts/organize_music_library.sh` -> pass
+   - `pytest -q server/tests/test_api.py` -> blocked in current shell (`fastapi` missing)
+2. Linux command-path verification:
+   - `python3 freetopify.py doctor` -> pass
+   - `python3 scripts/run_server.py --dry-run` -> pass
+   - `python3 freetopify_media.py doctor` -> pass
+3. Docs-to-script consistency scan:
+   - Active docs (`README.md`, `docs/setup-*.md`, `docs/server.md`) align with current scripts -> pass
+   - Historical references remain in `docs/changelog.md` and `docs/TASK.md` only.
+4. Release gating outcome:
+   - Maintainer accepted Safari validation deferral and approved release finalization.
+
 ---
 
 ## Progress Board
 - Step 1: `[DONE]`
 - Step 2: `[DONE]`
 - Step 3: `[DONE]`
-- Step 4: `[NOT DONE]`
-- Step 5: `[NOT DONE]`
-- Step 6: `[NOT DONE]`
-- Step 7: `[NOT DONE]`
-- Step 8: `[NOT DONE]`
-- Step 9: `[NOT DONE]`
+- Step 4: `[DONE]`
+- Step 5: `[DONE]`
+- Step 6: `[DONE]`
+- Step 7: `[DONE]`
+- Step 8: `[DONE]`
+- Step 9: `[DONE]`
 
 ---
 

@@ -114,6 +114,12 @@ web/
 - Resize to 390px → sidebar collapses to horizontal pills
 - Context menu → appears clamped within viewport with glass styling
 
+## Safari Smoke Checklist
+- Open app in Safari over HTTP (`http://...`) and verify live library updates still connect.
+- Open app in Safari over HTTPS (`https://...`) and verify live library updates connect via `wss://`.
+- Confirm no visible panel transparency breakage when `backdrop-filter` is unavailable.
+- Verify login, browse, playback controls, and downloads panel behavior are unchanged from Chrome/Firefox.
+
 ## Git Flow
 - `web: add auth and api modules`
 - `web: implement library browser`

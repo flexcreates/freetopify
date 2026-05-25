@@ -95,7 +95,28 @@ main() {
   resolve_root "${1:-}"
   if [[ ! -d "$ROOT" ]]; then
     echo "Root not found: $ROOT"
-    exit 1
+    printf 'Create this directory now? [Y/n]: '
+    local ans
+    IFS= read -r ans
+    if [[ -z "$ans" || "${ans,,}" == "y" || "${ans,,}" == "yes" ]]; then
+      if ! mkdir -p "$ROOT"; then
+        echo "Could not create: $ROOT"
+        exit 1
+      fi
+      echo "Created: $ROOT"
+    else
+      printf 'Enter alternate root path (blank to cancel): '
+      local alt
+      IFS= read -r alt
+      if [[ -z "$alt" ]]; then
+        exit 1
+      fi
+      resolve_root "$alt"
+      if [[ ! -d "$ROOT" ]]; then
+        echo "Root still not found: $ROOT"
+        exit 1
+      fi
+    fi
   fi
 
   log "INFO" "Start organize root=$ROOT"

@@ -24,16 +24,26 @@ jobs:
           python-version: '3.11'
 
       - name: Compile runner
-        run: python -m py_compile scripts/run_server.py
+        run: |
+          python -m py_compile scripts/run_server.py
+          python -m py_compile freetopify.py
+          python -m py_compile freetopify_media.py
 
-      - name: Validate shell wrappers syntax (Linux/macOS)
+      - name: Validate shell script syntax (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
+          bash -n scripts/install_linux.sh
+          bash -n scripts/install_macos.sh
           bash -n scripts/run_server_linux.sh
           bash -n scripts/run_server_macos.sh
+          bash -n scripts/ftsmdl.sh
+          bash -n scripts/organize_music_library.sh
 
       - name: Dry-run core runner
         run: python scripts/run_server.py --dry-run
+
+      - name: Dry-run root launcher
+        run: python freetopify.py start --dry-run
 
       - name: Dry-run Linux wrapper
         if: runner.os == 'Linux'
@@ -47,3 +57,24 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: ./scripts/run_server.ps1 --dry-run
+
+      - name: PowerShell syntax parse checks (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $files = @(
+            "scripts/run_server.ps1",
+            "scripts/install_windows.ps1",
+            "scripts/ftsmdl.ps1",
+            "scripts/organize_music_library.ps1"
+          )
+          foreach ($file in $files) {
+            Write-Host "Parsing $file"
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($file, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors -and $errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error $_.Message }
+              exit 1
+            }
+          }

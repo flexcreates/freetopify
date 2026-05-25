@@ -144,39 +144,19 @@ def do_start(extra_args: list[str], os_name: str) -> int:
 
 
 def do_download(os_name: str) -> int:
-    sh_script = PROJECT_ROOT / "scripts" / "ftsmdl.sh"
-    ps_script = PROJECT_ROOT / "scripts" / "ftsmdl.ps1"
-
-    if os_name in {"linux", "macos"} and have_file(sh_script):
-        return run_command(["bash", str(sh_script)])
-
-    if os_name == "windows" and have_file(ps_script):
-        ps = resolve_powershell()
-        if not ps:
-            log("ERROR", "PowerShell not found. Cannot run Windows downloader script.")
-            return 1
-        return run_command([ps, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(ps_script)])
-
-    log("ERROR", "No downloader helper is available for this OS yet.")
-    return 1
+    media_cli = PROJECT_ROOT / "freetopify_media.py"
+    if not have_file(media_cli):
+        log("ERROR", "freetopify_media.py not found.")
+        return 1
+    return run_command([sys.executable, str(media_cli), "download"])
 
 
 def do_organize(os_name: str) -> int:
-    sh_script = PROJECT_ROOT / "scripts" / "organize_music_library.sh"
-    ps_script = PROJECT_ROOT / "scripts" / "organize_music_library.ps1"
-
-    if os_name in {"linux", "macos"} and have_file(sh_script):
-        return run_command(["bash", str(sh_script)])
-
-    if os_name == "windows" and have_file(ps_script):
-        ps = resolve_powershell()
-        if not ps:
-            log("ERROR", "PowerShell not found. Cannot run Windows organizer script.")
-            return 1
-        return run_command([ps, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(ps_script)])
-
-    log("ERROR", "No organizer helper is available for this OS yet.")
-    return 1
+    media_cli = PROJECT_ROOT / "freetopify_media.py"
+    if not have_file(media_cli):
+        log("ERROR", "freetopify_media.py not found.")
+        return 1
+    return run_command([sys.executable, str(media_cli), "organize"])
 
 
 def parse_args() -> argparse.Namespace:

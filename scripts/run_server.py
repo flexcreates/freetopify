@@ -154,7 +154,8 @@ def stop_existing_server(host: str, port: int) -> None:
 
 
 def resolve_uvicorn_base(venv_path: Path, project_root: Path) -> list[str]:
-    venv_resolved = (project_root / venv_path).resolve() if not venv_path.is_absolute() else venv_path
+    venv_expanded = venv_path.expanduser()
+    venv_resolved = (project_root / venv_expanded).resolve() if not venv_expanded.is_absolute() else venv_expanded.resolve()
 
     candidates = []
     if os.name == "nt":

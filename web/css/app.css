@@ -67,6 +67,16 @@ body::before {
   overflow: hidden;
 }
 
+/* Fallback for browsers/environments with no backdrop-filter support */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .sidebar, .content-wrap, .right-panel {
+    background: rgba(12, 14, 28, 0.97);
+    box-shadow:
+      0 2px 0 rgba(255,255,255,0.03) inset,
+      0 16px 40px rgba(0,0,0,0.65);
+  }
+}
+
 /* inner gradient shimmer border */
 .sidebar::before, .content-wrap::before, .right-panel::before {
   content: '';
@@ -305,6 +315,16 @@ body::before {
   align-items: center;
   padding: 0 18px;
   cursor: pointer;
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .now-bar {
+    background: linear-gradient(
+      135deg,
+      rgba(10, 8, 20, 0.98) 0%,
+      rgba(18, 14, 36, 0.98) 100%
+    );
+  }
 }
 
 .now-bar::before {
